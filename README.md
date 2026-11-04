@@ -7,9 +7,9 @@ Verified data. Clear next steps. Clear to close, sooner.
 
 ## See it live
 
-- **[Clickable prototype](https://jelksmba.github.io/keystone/)**: pipeline, loan file, conditions, eFolder, reporting
-- **[Product overview](https://jelksmba.github.io/keystone/overview.html)**: what Keystone does, stage by stage
-- **[One platform instead of twenty vendors](https://jelksmba.github.io/keystone/tech-stack.html)**: market research on the lender tech stack and cost to originate
+- **[Clickable prototype](https://jelksmba.github.io/Keystone/)**: pipeline, loan file, conditions, eFolder, reporting
+- **[Product overview](https://jelksmba.github.io/Keystone/overview.html)**: what Keystone does, stage by stage
+- **[One platform instead of twenty vendors](https://jelksmba.github.io/Keystone/tech-stack.html)**: market research on the lender tech stack and cost to originate
 
 ![Pipeline](screenshots/pipeline.png)
 ![Loan file](screenshots/loan-file.png)
