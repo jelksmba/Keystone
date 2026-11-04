@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0}</style>
+</head>
+<body>
+<title>Keystone All-in-One Stack</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@600;700&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column; the vendor map is a filterable table grouped by stage of the loan. */
+:root {
+  --bg: #F3F5F2; --surface: #FFFFFF; --surface-2: #F8FAF7; --ink: #17201C; --muted: #5B6761; --line: #DCE2DD;
+  --accent: #1F5F4A; --accent-ink: #FFFFFF; --accent-weak: #E2EEE8;
+  --build: #1F5F4A; --build-bg: #E2EEE8; --embed: #2C5B88; --embed-bg: #E3ECF6; --integ: #5B6761; --integ-bg: #ECEFEC;
+  --deep: #0F3A2C; --gold: #E2A52C;
+  --font-display: "Schibsted Grotesk", "Public Sans", system-ui, sans-serif;
+  --font-ui: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #101513; --surface: #171F1C; --surface-2: #1B2420; --ink: #E5ECE8; --muted: #9AA8A1; --line: #2A3631;
+  --accent: #6BC29F; --accent-ink: #0E1A15; --accent-weak: #1D3429;
+  --build: #6BC29F; --build-bg: #1D3429; --embed: #81B2DF; --embed-bg: #182A3B; --integ: #9AA8A1; --integ-bg: #232D29; --deep: #A9DEC6; --gold: #F0C25E; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #101513; --surface: #171F1C; --surface-2: #1B2420; --ink: #E5ECE8; --muted: #9AA8A1; --line: #2A3631;
+  --accent: #6BC29F; --accent-ink: #0E1A15; --accent-weak: #1D3429;
+  --build: #6BC29F; --build-bg: #1D3429; --embed: #81B2DF; --embed-bg: #182A3B; --integ: #9AA8A1; --integ-bg: #232D29; --deep: #A9DEC6; --gold: #F0C25E; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-ui); font-size: 15px; line-height: 1.55; }
+.wrap { max-width: 1080px; margin: 0 auto; padding-block: 40px 64px; padding-inline: 20px; display: flex; flex-direction: column; gap: 36px; }
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+h1, h2 { font-family: var(--font-display); letter-spacing: -0.005em; }
+.brandbar { display: flex; align-items: center; gap: 10px; }
+.mark { width: 26px; height: 26px; border-radius: 6px; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font: 700 13px var(--font-display); }
+.wordmark { font: 700 17px var(--font-display); }
+.promise { font-size: 13px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+.stat .v { color: var(--deep); }
+h1 { font-size: clamp(26px, 4vw, 36px); line-height: 1.15; }
+h2 { font-size: 21px; }
+h3 { font-size: 16px; }
+p { margin: 0; max-width: 70ch; }
+.eyebrow { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 600; }
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+.num { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+section { display: flex; flex-direction: column; gap: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px 20px; }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.stat .v { font-family: var(--font-data); font-size: 26px; font-weight: 500; }
+.stat .k { font-size: 13px; color: var(--muted); }
+.three { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.tag { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+.tag.b { background: var(--build-bg); color: var(--build); }
+.tag.e { background: var(--embed-bg); color: var(--embed); }
+.tag.i { background: var(--integ-bg); color: var(--integ); }
+.filters { display: flex; flex-wrap: wrap; gap: 6px; }
+.filters button { font: inherit; font-size: 13px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--muted); border-radius: 999px; padding: 5px 12px; cursor: pointer; }
+.filters button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.tbl { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+table { width: 100%; border-collapse: collapse; min-width: 760px; }
+th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); padding: 10px 14px; border-bottom: 1px solid var(--line); }
+td { padding: 11px 14px; border-bottom: 1px solid var(--line); vertical-align: top; font-size: 14px; }
+tr.grp td { background: var(--surface-2); font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); padding-block: 7px; }
+td.ex { color: var(--muted); font-size: 13px; }
+.phases { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.phases ul, .list { margin: 8px 0 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
+.src { font-size: 13px; color: var(--muted); }
+.src a { color: var(--accent); }
+a { color: var(--accent); }
+@media (max-width: 760px) { .stats, .three, .phases { grid-template-columns: minmax(0, 1fr); } }
+</style>
+
+<div class="wrap">
+  <header style="display:flex;flex-direction:column;gap:12px">
+    <div class="brandbar"><span class="mark">K</span><span class="wordmark">Keystone</span><span class="eyebrow" style="margin-left:6px">Market research and product plan</span></div>
+    <h1>One platform instead of twenty vendors</h1>
+    <p>Lenders run their loan origination system, then buy a second layer of tools around it: verifications, income calculators, ordering portals, compliance engines, QC software, CRMs. This page maps that outside stack and decides, item by item, how Keystone brings it inside.</p>
+  </header>
+
+  <section>
+    <h2>Why this matters</h2>
+    <div class="stats">
+      <div class="card stat"><div class="v">$11,094</div><div class="k">Average cost to originate one loan in 2025 (MBA)</div></div>
+      <div class="card stat"><div class="v">$100–200</div><div class="k">Of that, the LOS itself, per loan (MBA / STRATMOR estimate)</div></div>
+      <div class="card stat"><div class="v">$650–1,110</div><div class="k">Total technology spend per loan for retail lenders (5–8% of cost)</div></div>
+    </div>
+    <p>The LOS is a small slice of what lenders spend on technology. Most of the money goes to the tools bolted around it, plus the people who move data between them. Freddie Mac found lenders using its digital tools originate about <b>$1,500 cheaper per loan</b>. That is the prize: fewer vendors, fewer hand-offs, less re-keying.</p>
+    <p class="small muted">These figures mix sources and years (the tech share is from 2022 data). Use them as direction, not as a quote.</p>
+  </section>
+
+  <section>
+    <h2>Three ways to bring a tool inside</h2>
+    <p>Think of Keystone like a phone. The phone maker designs the experience and the apps, but buys the camera sensor and the cell modem from specialists. Customers still feel like they bought one product.</p>
+    <div class="three">
+      <div class="card"><span class="tag b">Build</span><h3 style="margin-top:8px">We own it</h3><p class="small">Our own code and logic. Where Keystone wins: the analysis, the workflow, the automation, the experience.</p></div>
+      <div class="card"><span class="tag e">Embed</span><h3 style="margin-top:8px">Inside, under our screen</h3><p class="small">A data partner powers it, but the lender never leaves Keystone and gets one contract and one bill. Usually data that only a specialist can supply.</p></div>
+      <div class="card"><span class="tag i">Integrate</span><h3 style="margin-top:8px">Connect what they already use</h3><p class="small">Required systems (Fannie, Freddie) or heavy legal and capital products where the lender has a vendor already. We connect to it cleanly.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap">
+      <h2>The outside stack, and Keystone's plan for each</h2>
+      <div class="filters" role="group" aria-label="Filter by approach">
+        <button data-f="all" aria-pressed="true">All</button>
+        <button data-f="b" aria-pressed="false">Build</button>
+        <button data-f="e" aria-pressed="false">Embed</button>
+        <button data-f="i" aria-pressed="false">Integrate</button>
+      </div>
+    </div>
+    <div class="tbl"><table>
+      <thead><tr><th>What lenders buy today</th><th>Examples in the market</th><th>Keystone</th><th>How it shows up in Keystone</th></tr></thead>
+      <tbody id="map"></tbody>
+    </table></div>
+    <p class="small muted">Vendor names are examples of each category from public sources, not a complete list or an endorsement.</p>
+  </section>
+
+  <section>
+    <h2>What we build ourselves, and why</h2>
+    <div class="card"><ul class="list">
+      <li><b>Income, asset, credit and property analysis.</b> This is the heart of underwriting and your strongest experience. Owning the calculations means the loan, the documents and the decision all live in one place. Standalone income calculators exist because LOSs never did this well.</li>
+      <li><b>Document classification and data extraction on top of an OCR engine.</b> We rent the "eyes" (OCR) and build the "brain": what the document is, what it should match, and what to do when it doesn't.</li>
+      <li><b>Ordering hub.</b> One place, triggered by milestones, that orders and tracks every third-party item. The vendors behind it can change without the user noticing.</li>
+      <li><b>100% QC and the stated-versus-verified engine.</b> Today a separate QC system samples 10–20% of loans after the fact. Ours checks every loan, at every step.</li>
+      <li><b>Workflow, conditions, alerts, reporting, leaderboards.</b> This replaces task tools, robotic process automation bots and BI dashboards lenders buy separately.</li>
+      <li><b>Point of sale and a lightweight CRM.</b> The borrower's front door and the loan officer's follow-up list belong in the same system as the loan.</li>
+    </ul></div>
+  </section>
+
+  <section>
+    <h2>What we do not build, and why</h2>
+    <div class="card"><ul class="list">
+      <li><b>Automated underwriting (DU, LPA, GUS).</b> Required by the agencies. Integrate.</li>
+      <li><b>Pricing engine.</b> Lenders' rate sheets and investor relationships already live there. Integrate.</li>
+      <li><b>Credit bureau data.</b> Licensed, regulated (FCRA). Embed through a credit reseller.</li>
+      <li><b>Closing document generation.</b> The legal liability for state-by-state forms is the product. Integrate the lender's doc vendor.</li>
+      <li><b>eNote vault, MERS, remote notary.</b> Specialized, certified infrastructure. Integrate.</li>
+      <li><b>Hedging and loan sale.</b> Capital-markets desks have deep, specialized tools. Integrate in a later phase.</li>
+    </ul></div>
+  </section>
+
+  <section>
+    <h2>Roadmap</h2>
+    <div class="phases">
+      <div class="card"><div class="eyebrow">Phase 1 · Launch</div><h3>Replace the processing and underwriting stack</h3><ul class="small">
+        <li>LOS core, POS, borrower portal</li><li>Digital VOA, VOI/VOE, tax transcripts with a cost waterfall</li><li>Document AI and Four C's analysis (income, assets, credit, property)</li><li>Ordering hub: credit, appraisal, AVM, flood, title, HOA, fraud</li><li>Pricing, fees, AUS and compliance engine integrations</li><li>100% QC, alerts, reporting, leaderboards</li></ul></div>
+      <div class="card"><div class="eyebrow">Phase 2</div><h3>Front office and closing</h3><ul class="small">
+        <li>Lightweight CRM and speed-to-lead</li><li>Mortgage insurance and homeowner's insurance quotes</li><li>Bank statement, DSCR and asset depletion calculators (Non-QM)</li><li>eClose and remote notary integration</li><li>HMDA data checks and filing export</li></ul></div>
+      <div class="card"><div class="eyebrow">Phase 3</div><h3>After funding</h3><ul class="small">
+        <li>Lock desk and investor delivery files</li><li>Post-close trailing documents (recorded deed, final title policy)</li><li>Past-client retention alerts (rate drops, equity, listings)</li><li>Servicing transfer export</li></ul></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>How the business model works</h2>
+    <div class="card"><ul class="list">
+      <li><b>One contract, one bill.</b> Platform fee per closed loan, with data costs (credit, verifications, appraisals) passed through on the same invoice. This replaces many vendor contracts and invoices.</li>
+      <li><b>Verification waterfall.</b> Try the cheapest verified source first (borrower-permissioned payroll and bank data), and only fall back to more expensive databases when that fails. The savings are a selling point.</li>
+      <li><b>Swap vendors without the lender noticing.</b> Because orders run through our hub, we can change or add data partners for price or quality.</li>
+      <li><b>Vendor management made easy.</b> Lenders must review every third-party vendor. One vendor (us) with strong security reviews (SOC 2), and partners already approved, shortens that work.</li>
+    </ul></div>
+  </section>
+
+  <section>
+    <h2>Watch-outs</h2>
+    <div class="card"><ul class="list">
+      <li><b>Data costs are real.</b> Verification and credit fees are per pull. Price the bundle so heavy-use lenders don't erase the margin.</li>
+      <li><b>Regulated data.</b> Credit (FCRA), consumer financial data (GLBA), and borrower consent for every pull. Build consent and audit logging in from day one.</li>
+      <li><b>"All in one" has to be as good as best-of-breed.</b> Lenders will compare our income calculation to dedicated tools. Lead with the pieces where we are clearly better.</li>
+      <li><b>Lenders with existing contracts.</b> Some will keep their pricing engine or CRM for a while. Every embedded tool should also be able to run in "connect your own" mode.</li>
+    </ul></div>
+  </section>
+
+  <div class="promise">Keystone · Verified data. Clear next steps. Clear to close, sooner.</div>
+
+  <section class="src">
+    <h3 style="color:var(--ink)">Sources</h3>
+    <div><a href="https://www.housingwire.com/articles/mortgage-operating-model-redesign/">HousingWire: 2025 average cost to originate ($11,094)</a> · <a href="https://newslink.mba.org/?p=207260">MBA Newslink: tech share of cost and LOS cost per loan</a> · <a href="https://sf.freddiemac.com/docs/pdf/cost-to-originate-full-study-2024.pdf">Freddie Mac cost to originate study (2024)</a> · <a href="https://www.chrismancommentary.com/services/empower-dark-matter-technologies">Empower overview</a> · <a href="https://support.arive.com/support/solutions/articles/61000271217-what-is-arive-">ARIVE overview</a> · <a href="https://singlefamily.fanniemae.com/media/9466/display">Fannie Mae eClosing provider list</a> · <a href="https://theworknumber.com/verification-provider-comparison">The Work Number</a> · <a href="https://runtimewire.com/article/checkr-buys-truv-after-truework-verification-rollup">Checkr and Truv</a></div>
+  </section>
+</div>
+
+<script>
+const ROWS = [
+  ['Front office'],
+  ['CRM and marketing automation', 'Total Expert, Salesforce, Jungo, BNTouch', 'b', 'Lead list, follow-up tasks and the LO funnel built in; connect a big CRM if the lender keeps one'],
+  ['Point of sale (borrower application)', 'Blend, Maxwell, Floify', 'b', 'Our POS feeds the 1003 directly; first-time homebuyer and consent captured up front'],
+  ['Product and pricing engine', 'Optimal Blue, Polly, LoanPass', 'i', 'Priced from verified data inside the loan; lender keeps its engine'],
+  ['Fee and closing cost quotes', 'LodeStar, ClosingCorp', 'e', 'Fee estimate by county and city at pricing time'],
+  ['Verification'],
+  ['Credit reports', 'Credit resellers (e.g. Xactus)', 'e', 'Ordered from the loan; liabilities flow straight into credit analysis'],
+  ['Employment and income verification', 'The Work Number, Truv, Argyle, Plaid', 'e', 'Waterfall: payroll connection first, database fallback; drives income calculation'],
+  ['Asset verification', 'Plaid, Finicity, FormFree', 'e', 'Bank data in the borrower portal; balances and deposits checked automatically'],
+  ['Tax transcripts (IRS)', 'TaxStatus and IVES providers', 'e', 'Auto-ordered on entering processing'],
+  ['Fraud, identity and OFAC', 'FraudGuard, LexisNexis', 'e', 'Runs at application and before closing; results in Compliance and QC'],
+  ['Property and collateral'],
+  ['AVMs and property data', 'Clear Capital, HouseCanary, ATTOM', 'e', 'Property type verified before pricing; value with confidence score'],
+  ['Appraisal ordering and review', 'Appraisal management companies, Reggora, Mercury Network', 'e', 'Milestone-triggered order; appraisal review checklist from the XML'],
+  ['HOA and condo documents', 'HomeWiseDocs, CondoCerts', 'e', 'Auto-ordered when records show an HOA'],
+  ['Flood certification', 'Flood cert vendors', 'e', 'Auto-ordered on entering processing'],
+  ['Title and settlement', 'Title agents and title platforms', 'i', 'Order and receive title; fee reconciliation with the closing agent'],
+  ['Homeowner\'s insurance quotes', 'Matic, Covered', 'e', 'Quote in the borrower portal; premium feeds the housing payment'],
+  ['Underwriting'],
+  ['Income calculation tools', 'LoanBeam, Ocrolus, agency and MI calculators', 'b', 'Income and employment analysis screen, with rules by loan program'],
+  ['Document AI (classify and extract)', 'Ocrolus, Google Document AI', 'b', 'We build the logic on top of an OCR engine; powers alerts and the eFolder'],
+  ['Automated underwriting', 'DU, LPA, GUS', 'i', 'Required agency systems; findings shown in the file'],
+  ['Non-QM guideline and income tools', 'Investor matrices, Prudent AI', 'b', 'Bank statement, DSCR and asset depletion calculators'],
+  ['Mortgage insurance quotes and orders', 'MGIC, Radian, Enact, Essent, National MI, Arch', 'e', 'Rate quote and order from the loan when LTV is over 80%'],
+  ['Compliance and quality'],
+  ['Compliance engine (TRID, HOEPA, ATR, state)', 'ComplianceEase, Mavent', 'i', 'Runs on every milestone; build our own rules over time'],
+  ['Quality control software', 'ACES Quality Management, Cogent QC', 'b', '100% QC at every milestone instead of a post-close sample'],
+  ['HMDA data checks', 'HMDA scrubbing tools', 'b', 'Field checks while the loan is in process; filing export'],
+  ['Closing'],
+  ['Disclosure and closing documents', 'Docutech, DocMagic, Wolters Kluwer', 'i', 'Generated from the loan data; vendor carries the legal liability'],
+  ['eSign, eClose, remote notary', 'DocuSign, Snapdocs, Pavaso, Proof', 'i', 'Signing status tracked on the milestone roadmap'],
+  ['eNote vault and MERS', 'eOriginal, MERS', 'i', 'Phase 3'],
+  ['After funding'],
+  ['Lock desk, hedging and loan sale', 'Optimal Blue, MCT', 'i', 'Phase 3 integration'],
+  ['Post-close trailing documents', 'Outsourced post-close teams', 'b', 'Tracked like conditions after funding'],
+  ['Past-client retention alerts', 'Monitorbase, CRM add-ons', 'b', 'Rate-drop and equity alerts on funded loans'],
+  ['Operations'],
+  ['Task automation and bots (RPA)', 'Brimma, custom bots', 'b', 'Native workflow, triggers and checklists'],
+  ['Reporting and BI dashboards', 'BI tools, consultants', 'b', 'Role-based reporting and team leaderboards'],
+  ['Borrower texting and email', 'Messaging platforms', 'b', 'Notifications, reminders and e-sign requests from the loan'],
+];
+const TAG = { b: '<span class="tag b">Build</span>', e: '<span class="tag e">Embed</span>', i: '<span class="tag i">Integrate</span>' };
+function draw(f) {
+  let html = '', grp = null;
+  ROWS.forEach(r => {
+    if (r.length === 1) { grp = r[0]; return; }
+    if (f !== 'all' && r[2] !== f) return;
+    if (grp) { html += `<tr class="grp"><td colspan="4">${grp}</td></tr>`; grp = null; }
+    html += `<tr><td><b>${r[0]}</b></td><td class="ex">${r[1]}</td><td>${TAG[r[2]]}</td><td>${r[3]}</td></tr>`;
+  });
+  document.getElementById('map').innerHTML = html;
+}
+document.querySelectorAll('.filters button').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.filters button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  draw(b.dataset.f);
+}));
+draw('all');
+</script>
+
+</body>
+</html>

@@ -1,0 +1,2013 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0}</style>
+</head>
+<body>
+<title>Keystone LOS Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@600;700&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: left rail + work area. Loan file = header, milestone tracker, tabbed workspace. */
+:root {
+  --bg: #F3F5F2;
+  --surface: #FFFFFF;
+  --surface-2: #F8FAF7;
+  --ink: #17201C;
+  --muted: #5B6761;
+  --line: #DCE2DD;
+  --accent: #1F5F4A;
+  --accent-ink: #FFFFFF;
+  --accent-weak: #E2EEE8;
+  --ok: #2E7A4D; --ok-bg: #E4F2E9;
+  --warn: #9A6200; --warn-bg: #FBF0DC;
+  --bad: #B0322A; --bad-bg: #FBE6E4;
+  --info: #2C5B88; --info-bg: #E3ECF6;
+  --neutral-bg: #ECEFEC;
+  --gold: #E2A52C;
+  --font-display: "Schibsted Grotesk", "Public Sans", system-ui, sans-serif;
+  --font-ui: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --r: 8px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #101513; --surface: #171F1C; --surface-2: #1B2420; --ink: #E5ECE8; --muted: #9AA8A1; --line: #2A3631;
+    --accent: #6BC29F; --accent-ink: #0E1A15; --accent-weak: #1D3429;
+    --ok: #6CC08A; --ok-bg: #19301F; --warn: #E2A94B; --warn-bg: #33270F; --bad: #EF7B70; --bad-bg: #3A1B18;
+    --info: #81B2DF; --info-bg: #182A3B; --neutral-bg: #232D29; --gold: #F0C25E; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #101513; --surface: #171F1C; --surface-2: #1B2420; --ink: #E5ECE8; --muted: #9AA8A1; --line: #2A3631;
+  --accent: #6BC29F; --accent-ink: #0E1A15; --accent-weak: #1D3429;
+  --ok: #6CC08A; --ok-bg: #19301F; --warn: #E2A94B; --warn-bg: #33270F; --bad: #EF7B70; --bad-bg: #3A1B18;
+  --info: #81B2DF; --info-bg: #182A3B; --neutral-bg: #232D29; --gold: #F0C25E; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-ui); font-size: 14px; line-height: 1.45; }
+button, select, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.num, .mono { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+h1, h2, .loan-title, .brand-name { font-family: var(--font-display); letter-spacing: -0.005em; }
+
+.app { display: grid; grid-template-columns: 216px minmax(0, 1fr); min-height: 100%; }
+.rail { background: var(--surface); border-right: 1px solid var(--line); padding-block: 20px; padding-inline: 14px; display: flex; flex-direction: column; gap: 22px; }
+.brand { display: flex; align-items: center; gap: 10px; padding-inline: 6px; }
+.brand-mark { width: 28px; height: 28px; border-radius: 6px; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-weight: 700; font-size: 13px; }
+.brand-name { font-weight: 700; font-size: 16px; }
+.brand-sub { font-size: 11px; color: var(--muted); }
+.nav { display: flex; flex-direction: column; gap: 2px; }
+.nav button { text-align: left; background: none; border: 0; padding: 8px 10px; border-radius: 6px; color: var(--muted); font-weight: 500; }
+.nav button[aria-current="true"] { background: var(--accent-weak); color: var(--ink); font-weight: 600; }
+.nav button:hover { color: var(--ink); }
+.role { display: flex; flex-direction: column; gap: 6px; padding-inline: 6px; }
+.label { font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); font-weight: 600; }
+select, input[type="date"] { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; }
+.rail-foot { margin-top: auto; font-size: 12px; color: var(--muted); padding-inline: 6px; }
+
+main { min-width: 0; padding-block: 24px 48px; padding-inline: 28px; display: flex; flex-direction: column; gap: 20px; }
+.sample { font-size: 12px; color: var(--muted); }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
+.pad { padding: 16px 18px; }
+.row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.spread { justify-content: space-between; }
+.stack { display: flex; flex-direction: column; gap: 12px; }
+.muted { color: var(--muted); }
+.small { font-size: 12px; }
+
+.btn { border: 1px solid var(--line); background: var(--surface); border-radius: 6px; padding: 6px 12px; font-weight: 600; font-size: 13px; }
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn.danger { color: var(--bad); }
+.btn[disabled] { opacity: .45; cursor: not-allowed; }
+.btn.sm { padding: 3px 9px; font-size: 12px; }
+
+.chip { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px; white-space: nowrap; background: var(--neutral-bg); color: var(--muted); }
+.chip::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.chip.ok { background: var(--ok-bg); color: var(--ok); }
+.chip.warn { background: var(--warn-bg); color: var(--warn); }
+.chip.bad { background: var(--bad-bg); color: var(--bad); }
+.chip.info { background: var(--info-bg); color: var(--info); }
+.chip.plain::before { display: none; }
+
+/* Loan header */
+.loan-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: start; }
+.loan-title { font-size: 22px; font-weight: 700; }
+.facts { display: flex; flex-wrap: wrap; gap: 6px 22px; margin-top: 10px; }
+.fact { display: flex; flex-direction: column; }
+.fact b { font-weight: 600; }
+.fact span { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+.trust { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+
+/* Milestone tracker */
+.tracker { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.phase { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.phase .bar { height: 6px; border-radius: 3px; background: var(--line); }
+.phase.done .bar { background: var(--accent); opacity: .55; }
+.phase.now .bar { background: var(--accent); }
+.phase .pname { font-size: 12px; font-weight: 600; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.phase.now .pname { color: var(--ink); }
+.status-line { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; margin-top: 12px; }
+.status-now { font-weight: 700; }
+
+/* Tabs */
+.tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: thin; }
+.tabs button { background: none; border: 0; padding: 10px 12px; font-weight: 600; color: var(--muted); border-bottom: 2px solid transparent; white-space: nowrap; display: inline-flex; gap: 6px; align-items: center; }
+.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.count { font-family: var(--font-data); font-size: 11px; background: var(--neutral-bg); border-radius: 999px; padding: 0 6px; }
+.count.alert { background: var(--warn-bg); color: var(--warn); }
+
+/* Tables */
+.tbl { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; padding: 10px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+td.r, th.r { text-align: right; }
+tr.flag td:first-child { box-shadow: inset 3px 0 0 var(--warn); }
+tr.flag-bad td:first-child { box-shadow: inset 3px 0 0 var(--bad); }
+.sec-row td { background: var(--surface-2); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; padding-block: 6px; }
+.clickable { cursor: pointer; }
+.clickable:hover td { background: var(--surface-2); }
+
+.grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.kpi { display: flex; flex-direction: column; gap: 2px; }
+.kpi .v { font-family: var(--font-data); font-size: 20px; font-weight: 500; }
+.kpi .k { font-size: 12px; color: var(--muted); }
+
+.section-h { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.section-h h2 { font-size: 16px; }
+.section-h h3 { font-size: 14px; }
+
+/* Review cards */
+.an-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 14px 18px; border-bottom: 1px solid var(--line); }
+.an-head h3 { font-size: 15px; }
+.an-c { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; font-weight: 600; }
+.findings { list-style: none; margin: 0; padding: 6px 0; }
+.findings li { display: grid; grid-template-columns: 78px minmax(0, 1fr); gap: 10px; padding: 9px 18px; }
+.findings .act { margin-top: 6px; }
+.metrics { display: flex; flex-wrap: wrap; gap: 6px 20px; padding: 12px 18px; border-bottom: 1px solid var(--line); background: var(--surface-2); }
+.metric { display: flex; gap: 6px; align-items: baseline; }
+.metric .num { font-weight: 500; }
+
+.cmp { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; background: var(--line); border-radius: 6px; overflow: hidden; margin: 12px 18px; }
+.cmp > div { background: var(--surface); padding: 10px 12px; }
+.cmp .num { font-size: 16px; }
+
+.check-list { list-style: none; margin: 0; padding: 0; }
+.check-list li { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 10px; padding: 10px 18px; border-bottom: 1px solid var(--line); align-items: start; }
+.check-list li:last-child { border-bottom: 0; }
+.mark { width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 700; margin-top: 1px; }
+.mark.ok { background: var(--ok-bg); color: var(--ok); }
+.mark.warn { background: var(--warn-bg); color: var(--warn); }
+.mark.bad { background: var(--bad-bg); color: var(--bad); }
+.mark.pend { background: var(--neutral-bg); color: var(--muted); }
+
+.subtabs { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.subtabs button { border: 0; background: var(--surface); padding: 6px 12px; font-weight: 600; font-size: 13px; color: var(--muted); }
+.subtabs button[aria-pressed="true"] { background: var(--accent-weak); color: var(--ink); }
+
+.funnel { display: flex; flex-direction: column; gap: 8px; }
+.fstep { display: grid; grid-template-columns: 150px minmax(0, 1fr) 56px 56px; gap: 10px; align-items: center; }
+.fbar { height: 18px; border-radius: 4px; background: var(--accent); opacity: .85; min-width: 4px; }
+.ftrack { background: var(--neutral-bg); border-radius: 4px; }
+
+.toast { position: fixed; right: 20px; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--bg); padding: 10px 14px; border-radius: 6px; font-weight: 600; max-width: min(380px, calc(100vw - 40px)); box-shadow: 0 6px 24px rgba(0,0,0,.18); }
+.note { font-size: 12px; color: var(--muted); }
+.timeline { list-style: none; margin: 0; padding: 0; }
+.timeline li { display: grid; grid-template-columns: 132px minmax(0, 1fr); gap: 12px; padding: 10px 18px; border-bottom: 1px solid var(--line); }
+.timeline li:last-child { border-bottom: 0; }
+.diff { font-family: var(--font-data); font-size: 12px; }
+.diff del { color: var(--bad); }
+.diff ins { color: var(--ok); text-decoration: none; }
+.banner { display: flex; gap: 12px; align-items: flex-start; padding: 12px 16px; border-radius: var(--r); background: var(--info-bg); color: var(--ink); }
+.banner.warn { background: var(--warn-bg); }
+.banner b { display: block; }
+
+.workspace { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; align-items: start; }
+.workspace.split { grid-template-columns: minmax(0, 1fr) minmax(340px, 480px); }
+.docpanel { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); max-height: calc(100vh - 24px); overflow: auto; }
+.doclist { list-style: none; margin: 0; padding: 4px 0; max-height: 260px; overflow: auto; border-bottom: 1px solid var(--line); }
+.doclist .grp { font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); font-weight: 600; padding: 8px 16px 4px; }
+.doclist button { width: 100%; text-align: left; background: none; border: 0; padding: 7px 16px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; }
+.doclist button:hover { background: var(--surface-2); }
+.doclist button[aria-current="true"] { background: var(--accent-weak); }
+.doclist .dn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
+.paper { margin: 14px 16px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface-2); padding: 14px; font-size: 12px; }
+.paper h4 { margin: 0 0 2px; font-size: 13px; }
+.paper table td, .paper table th { padding: 5px 6px; font-size: 12px; }
+.paper tr.hl td { background: var(--warn-bg); }
+.wf { display: grid; grid-template-columns: minmax(0, 1fr); }
+.wf-head { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; padding: 14px 18px; }
+.wf-prog { flex: 1 1 160px; min-width: 120px; height: 6px; border-radius: 3px; background: var(--neutral-bg); overflow: hidden; }
+.wf-prog > div { height: 100%; background: var(--accent); }
+.wf-next { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 12px 18px; border-top: 1px solid var(--line); background: var(--accent-weak); }
+.wf-next b { font-size: 15px; }
+.wf-steps { list-style: none; margin: 0; padding: 4px 0; border-top: 1px solid var(--line); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-flow: column; }
+.wf-steps li { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 10px; padding: 8px 18px; align-items: start; }
+.wf-steps li.cur { background: var(--surface-2); }
+.wf-steps .done-t { color: var(--muted); }
+.how { font-size: 11px; color: var(--muted); }
+@media (max-width: 900px) { .wf-steps { grid-template-columns: minmax(0, 1fr); grid-template-rows: none !important; grid-auto-flow: row; } }
+.me { display: flex; gap: 10px; align-items: center; padding-inline: 6px; }
+.avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--accent-weak); color: var(--accent); display: grid; place-items: center; font-weight: 700; font-size: 12px; }
+.role.demo { margin-top: auto; border-top: 1px dashed var(--line); padding-top: 12px; }
+.role.demo select { font-size: 12px; }
+.rail-foot { margin-top: 0; }
+tr.sel td { background: var(--accent-weak); }
+.file-layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 20px; align-items: start; }
+.filenav { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); display: flex; flex-direction: column; gap: 14px; }
+.fn-group { display: flex; flex-direction: column; gap: 1px; }
+.fn-label { font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); font-weight: 600; padding: 0 10px 4px; }
+.filenav button { display: flex; justify-content: space-between; align-items: center; gap: 8px; text-align: left; background: none; border: 0; padding: 7px 10px; border-radius: 6px; color: var(--ink); font-weight: 500; }
+.filenav button:hover { background: var(--surface); }
+.filenav button[aria-current="true"], .filenav button[aria-pressed="true"] { background: var(--accent-weak); font-weight: 600; box-shadow: inset 3px 0 0 var(--accent); }
+.you { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--accent); margin-left: 4px; }
+.file-layout.split { grid-template-columns: minmax(0, 1fr); }
+.file-layout.split .filenav { position: static; flex-direction: row; flex-wrap: wrap; gap: 4px 14px; }
+.file-layout.split .fn-group { flex-direction: row; flex-wrap: wrap; align-items: center; }
+.wf-strip { display: flex; gap: 10px 14px; align-items: center; flex-wrap: wrap; padding: 12px 18px; background: var(--accent-weak); border-color: transparent; }
+.wf-strip b { font-size: 15px; }
+.wf-mini { display: inline-flex; gap: 8px; align-items: center; margin-left: auto; }
+.wf-mini .wf-prog { display: block; width: 90px; height: 6px; border-radius: 3px; background: var(--surface); overflow: hidden; flex: none; min-width: 0; }
+.wf-mini .wf-prog span { display: block; height: 100%; background: var(--accent); }
+.wf-steps.one { grid-template-columns: minmax(0, 1fr); grid-auto-flow: row; border-top: 0; }
+.wf-steps.one li { border-bottom: 1px solid var(--line); padding-block: 12px; }
+.wf-steps.one li:last-child { border-bottom: 0; }
+.wf-steps.one .mark { font-size: 10px; }
+.pager { display: flex; gap: 4px; flex-wrap: wrap; }
+.pager button { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 5px 12px; font-weight: 600; font-size: 13px; color: var(--muted); display: inline-flex; gap: 6px; align-items: center; }
+.pager button[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 20px; }
+.form-sec { grid-column: 1 / -1; font-size: 12px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); font-weight: 700; padding-top: 6px; border-bottom: 1px solid var(--line); padding-bottom: 6px; }
+.ff { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.ff label { font-size: 12px; color: var(--muted); font-weight: 600; }
+.ff-row { display: flex; gap: 8px; align-items: center; }
+.ff input { flex: 1; min-width: 0; background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; padding: 7px 9px; }
+.ff input:focus { background: var(--surface); }
+@media (max-width: 900px) {
+  .file-layout { grid-template-columns: minmax(0, 1fr); }
+  .filenav { position: static; flex-direction: row; overflow-x: auto; gap: 14px; padding-bottom: 6px; }
+  .fn-group { flex-direction: row; flex: none; }
+  .fn-label { align-self: center; }
+  .filenav button { white-space: nowrap; }
+  .form-grid { grid-template-columns: minmax(0, 1fr); }
+  .role.demo { margin-top: 0; border-top: 0; padding-top: 0; }
+}
+.loan-tools { display: flex; gap: 10px 20px; align-items: flex-end; flex-wrap: wrap; justify-content: space-between; }
+.search { position: relative; flex: 1 1 320px; max-width: 520px; display: flex; flex-direction: column; gap: 4px; }
+.search input { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; }
+.results { position: absolute; top: 100%; left: 0; right: 0; z-index: 5; margin-top: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; box-shadow: 0 8px 24px rgba(0,0,0,.12); max-height: 320px; overflow: auto; }
+.results button { display: flex; justify-content: space-between; gap: 10px; width: 100%; text-align: left; background: none; border: 0; padding: 8px 12px; }
+.results button:hover, .results button:focus-visible { background: var(--accent-weak); }
+.presence { display: inline-flex; gap: 6px; align-items: center; }
+.presence .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); }
+.bell { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 5px 10px; font-weight: 600; font-size: 13px; color: var(--muted); }
+.bell.has { color: var(--bad); border-color: var(--bad); }
+.bell.sm { padding: 3px 8px; }
+.badge-n { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: var(--bad); color: #fff; font-size: 11px; font-weight: 700; font-family: var(--font-data); }
+.attn { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 12px 16px; border-radius: var(--r); background: var(--bad-bg); border: 1px solid var(--bad); }
+.attn .badge-n { width: 28px; height: 28px; font-size: 13px; }
+.attn button { margin-left: auto; }
+.drawer-back { position: fixed; inset: 0; background: rgba(0,0,0,.25); z-index: 30; }
+.drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(460px, 100vw); background: var(--bg); z-index: 31; overflow: auto; box-shadow: -8px 0 32px rgba(0,0,0,.18); padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+.drawer .an-head { background: var(--surface); position: sticky; top: 0; z-index: 1; }
+.alert-list { list-style: none; margin: 0; padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; }
+.alert-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; }
+.alert-card.sev-bad { box-shadow: inset 3px 0 0 var(--bad); }
+.alert-card.sev-warn { box-shadow: inset 3px 0 0 var(--warn); }
+.alert-card.sev-info { box-shadow: inset 3px 0 0 var(--info); }
+.profile { margin-top: 14px; display: flex; flex-direction: column; gap: 10px; }
+.pf-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px 18px; padding-top: 10px; border-top: 1px solid var(--line); }
+.pf { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.pf > span { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+.pf b { font-weight: 600; }
+.pf-row.nums b { font-family: var(--font-data); font-weight: 500; font-variant-numeric: tabular-nums; }
+.pf select { width: 100%; }
+.pf-act { justify-content: flex-end; align-items: flex-start; }
+.pf > span.note { text-transform: none; letter-spacing: 0; font-size: 12px; }
+.pf-warn { display: flex; flex-wrap: wrap; gap: 6px; }
+.pf-warn .chip { white-space: normal; }
+.journey { padding: 14px 18px; display: flex; flex-direction: column; gap: 12px; }
+.jr-bar { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 6px; }
+.jr-step { display: flex; flex-direction: column; gap: 4px; padding-top: 10px; border-top: 4px solid var(--line); min-width: 0; }
+.jr-step.done { border-top-color: color-mix(in srgb, var(--accent) 55%, transparent); }
+.jr-step.now { border-top-color: var(--accent); }
+.jr-step .jr-dot { display: none; }
+.jr-name { font-size: 12px; font-weight: 600; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.jr-step.now .jr-name, .jr-step.done .jr-name { color: var(--ink); }
+.jr-meta { font-size: 11px; color: var(--muted); font-family: var(--font-data); }
+.jr-step.now .jr-meta { color: var(--accent); font-weight: 600; font-family: var(--font-ui); }
+.jr-sum { display: flex; gap: 8px 22px; align-items: center; flex-wrap: wrap; }
+.jr-sum button { margin-left: auto; }
+.jr-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.jr-list > li { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.jr-list > li:last-child { border-bottom: 0; }
+.jr-list .jr-dot { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 700; background: var(--neutral-bg); color: var(--muted); }
+.jr-list li.done .jr-dot { background: var(--accent-weak); color: var(--accent); }
+.jr-list li.now .jr-dot { background: var(--accent); color: var(--accent-ink); }
+.subs { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 4px; }
+.sub { font-size: 12px; color: var(--muted); }
+.sub.now { color: var(--accent); font-weight: 700; }
+.sub.done { color: var(--ink); }
+.need { margin-top: 8px; background: var(--surface-2); border-radius: 6px; padding: 10px 12px; }
+.need ul { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.need li { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 10px; align-items: center; }
+.progress { display: grid; grid-template-columns: auto minmax(0, 1.4fr) minmax(0, 1fr); gap: 20px; padding: 14px 18px; align-items: start; }
+.pg-ring { display: flex; gap: 12px; align-items: center; }
+.pg-next, .pg-badges { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.nb { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.nb li { display: grid; grid-template-columns: 46px minmax(0, 1fr) auto auto; gap: 8px; align-items: center; }
+.nb-t { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gain { font-family: var(--font-data); font-size: 12px; font-weight: 600; color: var(--ok); background: var(--ok-bg); border-radius: 4px; padding: 1px 6px; text-align: center; }
+.badges { display: flex; flex-wrap: wrap; gap: 6px; }
+.fb { font-size: 12px; padding: 3px 9px; border-radius: 999px; border: 1px dashed var(--line); color: var(--muted); }
+.fb.on { border-style: solid; border-color: var(--gold); color: var(--accent); background: var(--accent-weak); font-weight: 600; }
+.linkbtn { background: none; border: 0; padding: 0; color: var(--accent); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
+.mini { display: inline-flex; gap: 6px; align-items: center; }
+.mini-bar { width: 56px; height: 6px; border-radius: 3px; background: var(--neutral-bg); overflow: hidden; display: inline-block; }
+.mini-bar span { display: block; height: 100%; background: var(--accent); }
+@media (max-width: 1100px) { .progress { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 560px) { .jr-name { font-size: 10px; } .jr-meta { display: none; } .need li { grid-template-columns: minmax(0, 1fr) auto; } .need li .muted { display: none; } }
+.standings { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; border-bottom: 1px solid var(--line); }
+.standing { font-size: 12px; padding: 3px 9px; border-radius: 999px; background: var(--neutral-bg); }
+.standing.top { background: var(--accent-weak); color: var(--accent); box-shadow: inset 0 0 0 1px var(--gold); }
+.lb-metrics { flex-wrap: wrap; }
+th.lb-sort, td.lb-sort { background: var(--surface-2); font-weight: 600; }
+tr.me-row td { background: var(--accent-weak); }
+.rank { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; font-family: var(--font-data); font-size: 12px; font-weight: 600; background: var(--neutral-bg); color: var(--muted); }
+.rank.r1 { background: var(--gold); color: #17201C; }
+.rank.r2, .rank.r3 { background: var(--accent-weak); color: var(--accent); }
+.tab-tools { margin-left: auto; display: flex; align-items: center; padding-left: 12px; }
+@media (max-width: 1200px) { .workspace.split { grid-template-columns: minmax(0, 1fr); } .docpanel { position: static; max-height: none; } }
+@media (max-width: 1100px) { .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 900px) {
+  .app { grid-template-columns: minmax(0, 1fr); }
+  .rail { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 12px; border-right: 0; border-bottom: 1px solid var(--line); padding-block: 12px; padding-inline: 16px; }
+  .nav { flex-direction: row; }
+  .role { flex-direction: row; align-items: center; padding: 0; }
+  .rail-foot { display: none; }
+  main { padding-inline: 16px; padding-block: 16px 40px; }
+  .grid-2 { grid-template-columns: minmax(0, 1fr); }
+  .loan-head { grid-template-columns: minmax(0, 1fr); }
+  .trust { align-items: flex-start; }
+  .tracker { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+  .phase .pname { font-size: 10px; }
+}
+@media (max-width: 560px) {
+  .grid-4 { grid-template-columns: minmax(0, 1fr); }
+  .cmp { grid-template-columns: minmax(0, 1fr); }
+  .fstep { grid-template-columns: 110px minmax(0, 1fr) 40px; }
+  .fstep .conv { display: none; }
+  .timeline li { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .findings li { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .tracker .pname { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+<div class="app">
+  <aside class="rail">
+    <div class="brand">
+      <div class="brand-mark">K</div>
+      <div><div class="brand-name">Keystone</div><div class="brand-sub">Loan origination</div></div>
+    </div>
+    <nav class="nav" aria-label="Main">
+      <button id="nav-pipeline" data-view="pipeline">Pipeline</button>
+      <button id="nav-loan" data-view="loan">Loan file</button>
+      <button id="nav-docs" data-view="docs">Documents</button>
+      <button id="nav-reports" data-view="reports">Reporting</button>
+    </nav>
+    <div class="me">
+      <div class="avatar" id="meAvatar">GW</div>
+      <div><b id="meName">Grace Whitfield</b><div class="small muted" id="meRole">Underwriter</div></div>
+    </div>
+    <div class="role demo">
+      <label class="label" for="role">Prototype only: sign in as</label>
+      <select id="role">
+        <optgroup label="Team member">
+          <option>Loan officer</option>
+          <option>Processor</option>
+          <option selected>Underwriter</option>
+          <option>Closer</option>
+          <option>Funder</option>
+          <option>Post-closer</option>
+          <option>Disclosure desk</option>
+          <option>Lock desk</option>
+        </optgroup>
+        <optgroup label="Manager">
+          <option>Branch manager</option>
+          <option>Processing manager</option>
+          <option>Underwriting manager</option>
+          <option>Closing manager</option>
+          <option>Capital markets manager</option>
+        </optgroup>
+      </select>
+    </div>
+    <div class="rail-foot">Prototype with sample data. In the real product, your role comes from your login.</div>
+  </aside>
+  <main id="main"></main>
+</div>
+<div id="toast" class="toast" hidden></div>
+
+<script>
+// ---------- helpers ----------
+const $ = (s, el = document) => el.querySelector(s);
+const money = (n, d = 0) => '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
+const pad = n => String(n).padStart(2, '0');
+const iso = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const parseDate = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+const fmtDate = d => d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+const HOLIDAYS = ['2026-11-11', '2026-11-26', '2026-12-25', '2027-01-01', '2027-01-18', '2027-02-15'];
+// TRID "specific" business day: every day except Sundays and federal holidays
+const isBiz = d => d.getDay() !== 0 && !HOLIDAYS.includes(iso(d));
+function addBiz(d, n) { const x = new Date(d); let c = 0; const step = n < 0 ? -1 : 1; while (c < Math.abs(n)) { x.setDate(x.getDate() + step); if (isBiz(x)) c++; } return x; }
+function now() { const d = new Date(); return d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }); }
+let toastT;
+let lastToast = '';
+function toast(msg) { lastToast = msg; const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 2600); }
+const chip = (cls, txt) => `<span class="chip ${cls}">${txt}</span>`;
+
+// ---------- sample loan ----------
+const MILESTONES = ['Loan origination', 'Disclosures', 'Sent to processing', 'In processing', 'Sent to underwriting', 'In underwriting', 'Underwriting decision', 'In closing', 'Docs out', 'Pending signing', 'Signing completed', 'Docs back', 'Closing audit', 'In funding', 'Wire requested', 'Wire received', 'Funded', 'Post-close audit', 'Investor delivery', 'Delivered to investor', 'Purchased by investor'];
+const PHASES = [['Origination', [0]], ['Disclosures', [1]], ['Processing', [2, 3]], ['Underwriting', [4, 5, 6]], ['Closing', [7, 8, 9, 10, 11]], ['Closing audit', [12]], ['Funding', [13, 14, 15, 16]], ['Post-close', [17, 18, 19, 20]]];
+const OWNER = { 0: 'Loan officer', 1: 'Disclosure desk', 2: 'Processor', 3: 'Processor', 4: 'Underwriter', 5: 'Underwriter', 6: 'Processor', 7: 'Closer', 8: 'Closer', 9: 'Closer', 10: 'Closer', 11: 'Closer', 12: 'Closer', 13: 'Funder', 14: 'Funder', 15: 'Funder', 16: 'Funder', 17: 'Post-closer', 18: 'Post-closer', 19: 'Lock desk', 20: 'Lock desk' };
+
+const LOAN = {
+  id: 'LN-2026-10482', borrower: 'Maya Okafor', purpose: 'Purchase', refiType: '', loanType: 'Conventional', category: 'Agency', investor: 'Fannie Mae', docType: 'Full doc', altDoc: '', incomeType: 'Wage earner', fthb: 'Yes', fthbSource: 'POS application · Sep 28', propertyType: 'PUD', units: '1', occupancy: 'Primary residence',
+  amount: 520000, price: 650000, rate: 6.125, term: 360, lockExp: '2026-11-20',
+  address: '4182 Larkspur Ct, Elk Grove, CA 95758', county: 'Sacramento County',
+  income: 10983.33, taxes: 676, hoi: 142, hoa: 85,
+};
+// Liabilities: what the application says vs. the credit report vs. the payment used to qualify
+const LIABS = [
+  { id: 'toyota', name: 'Toyota Motor Credit', type: 'Auto', bal: 14210, app: 398, credit: 398, used: 398, onApp: true, src: 'credit', rule: '' },
+  { id: 'chase', name: 'Chase Freedom', type: 'Revolving', bal: 1320, app: 35, credit: 65, used: 65, onApp: true, src: 'credit', rule: 'Minimum payment on credit report' },
+  { id: 'capone', name: 'Capital One', type: 'Revolving', bal: 2140, app: 0, credit: null, used: 107, onApp: true, src: 'credit', rule: '5% of balance (no payment reported)' },
+  { id: 'nelnet', name: 'Nelnet', type: 'Student loan', bal: 38200, app: 0, credit: 0, used: 382, onApp: true, src: 'credit', rule: '1% of balance (Fannie, $0 reported)' },
+  { id: 'affirm', name: 'Affirm', type: 'Installment', bal: 1240, app: null, credit: 89, used: 0, onApp: false, src: 'credit', rule: '8 payments left; 10 or fewer may be excluded' },
+];
+// Real estate owned (1003 section 3)
+const REO = [];
+const SAMPLE_REO = [
+  { address: '1550 Oak Ave, Sacramento, CA', use: 'Investment', value: 410000, rent: 2450 },
+  { address: '88 Delta Way, Stockton, CA', use: 'Investment', value: 335000, rent: 2100 },
+  { address: '12 Lakeview Dr, South Lake Tahoe, CA', use: 'Second home', value: 720000, rent: 0 },
+];
+// Investor experience, from REO + subject occupancy
+function investorExp() {
+  const n = REO.filter(r => r.use === 'Investment').length;
+  if (n >= 2) return { label: 'Experienced investor', why: `Owns ${n} investment properties (REO)` };
+  if (n === 1) return { label: 'Novice investor', why: 'Owns 1 investment property (REO)' };
+  if (LOAN.occupancy === 'Investment') return { label: 'First-time investor', why: 'No investment properties in REO; buying an investment property' };
+  return { label: 'Not an investor', why: 'No investment properties in REO; subject is not an investment' };
+}
+const pAndI = (() => { const r = LOAN.rate / 100 / 12; return LOAN.amount * r / (1 - Math.pow(1 + r, -LOAN.term)); })();
+
+const state = {
+  waiving: null,
+  waiving: null, purchased: false, lockLog: [], auditRes: {}, trailing: false, delivered: false, deliveryMethod: '', journeyOpen: false, msDates: { 0: ['Sep 29', 'Jordan Reyes'], 1: ['Sep 30', 'Disclosure desk'], 2: ['Oct 1', 'Tam Nguyen'], 3: ['Oct 2', 'Tam Nguyen'], 4: ['Oct 12', 'Tam Nguyen'], 5: ['Oct 12', 'Grace Whitfield'] }, editProfile: false, alertsOpen: false, formerAdded: false, dismissed: {}, appPage: 0, sel: 'LN-2026-10482', view: 'pipeline', period: 'Month', wfOpen: true, manual: {}, tab: 'summary', split: false, doc: 'bank-sep', ms: 5, decision: null, condTab: 'uw',
+  closeDate: '2026-11-13', undisclosedConfirmed: false, lastRun: 'Oct 12, 9:14 AM',
+};
+
+const DATA = [
+  { id: 'ptype', doc: 'title', field: 'Property type', stated: 'Single family (detached)', verified: 'PUD · HOA $85/mo', source: 'County property records', status: 'resolved', note: 'Caught at origination before pricing. Priced as PUD, no repricing later.' },
+  { id: 'value', doc: 'appraisal', field: 'Property value', stated: '$650,000 (purchase price)', verified: '$662,000 AVM · $655,000 appraisal', source: 'Clear Capital AVM (91% confidence) · Appraisal Oct 9', status: 'verified' },
+  { id: 'income', doc: 'paystub', field: 'Base income (monthly)', stated: '$11,250.00', verified: '$10,983.33', source: 'Payroll connection + 2024–25 W-2 transcripts', status: 'mismatch', apply: '$10,983.33' },
+  { id: 'employ', doc: 'paystub', field: 'Employer / tenure', stated: 'Kaiser Permanente · 4 yrs', verified: 'Kaiser Permanente · 4 yrs 2 mos', source: 'Payroll connection', status: 'verified' },
+  { id: 'bank', doc: 'bank-sep', field: 'Checking balance (Golden 1 ••4471)', stated: '$48,000.00', verified: '$52,310.44', source: 'Plaid · statement ending Oct 1', status: 'mismatch', apply: '$52,310.44' },
+  { id: 'gift', doc: 'gift', field: 'Gift funds', stated: '$20,000 from mother', verified: 'Gift letter sent Oct 8 · awaiting donor signature', source: 'E-sign', status: 'stated' },
+  { id: 'tax', doc: 'title', field: 'Property taxes (monthly)', stated: '$650.00', verified: '$676.00', source: 'Public records · 2025–26 bill $8,112', status: 'mismatch', apply: '$676.00' },
+  { id: 'hoi', field: 'Homeowner’s insurance (monthly)', stated: '$150.00', verified: '$142.00', source: 'Insurance quote · Oct 7', status: 'mismatch', apply: '$142.00' },
+  { id: 'credit', doc: 'credit', field: 'Credit score (middle)', stated: '“Around 740”', verified: '742', source: 'Tri-merge credit · Sep 29', status: 'verified' },
+  { id: 'occ', field: 'Occupancy', stated: 'Primary residence', verified: '—', source: 'Needs verification (no conflicting address)', status: 'stated' },
+];
+
+const CONDS = [
+  // preliminary
+  { id: 'P1', list: 'pre', title: 'Two most recent pay stubs', assigned: 'Borrower', signoff: 'Processor', timing: 'Prior to UW', status: 'Cleared', source: 'Auto · application', by: 'Payroll connection (digital)', released: true },
+  { id: 'P2', list: 'pre', title: '2024 and 2025 W-2s', assigned: 'Borrower', signoff: 'Processor', timing: 'Prior to UW', status: 'Cleared', source: 'Auto · application', by: 'Tax transcripts (digital)', released: true },
+  { id: 'P3', list: 'pre', title: 'Two months bank statements, all accounts', assigned: 'Borrower', signoff: 'Processor', timing: 'Prior to UW', status: 'Cleared', source: 'Auto · application', by: 'Plaid (digital)', released: true },
+  { id: 'P4', list: 'pre', title: 'Fully executed purchase contract', assigned: 'Loan officer', signoff: 'Processor', timing: 'Prior to UW', status: 'Cleared', source: 'Auto · purchase', by: 'J. Reyes (LO)', released: true },
+  { id: 'P5', list: 'pre', title: 'Gift letter signed by donor and borrower', assigned: 'Borrower', signoff: 'Processor', timing: 'Prior to UW', status: 'Open', source: 'Auto · gift on application', released: true },
+  // underwriting
+  { id: 'U1', list: 'uw', title: 'Explain and source $6,500 deposit on Sep 3 (Golden 1 ••4471)', assigned: 'Borrower', signoff: 'Underwriter', timing: 'Prior to docs', status: 'Added', source: 'Auto · large deposit rule', released: false },
+  { id: 'U2', list: 'uw', title: 'Explain recurring $412/mo payment to Westlake Financial', assigned: 'Borrower', signoff: 'Underwriter', timing: 'Prior to docs', status: 'Added', source: 'Auto · asset analysis', released: false },
+  { id: 'U3', list: 'uw', title: 'Sign credit inquiry letter (2 inquiries, last 90 days)', assigned: 'Borrower', signoff: 'Processor', timing: 'Prior to docs', status: 'Added', source: 'Auto · credit report', released: false, generated: true },
+  { id: 'U4', list: 'uw', title: 'Sign address letter: 220 W Pine St, Lodi', assigned: 'Borrower', signoff: 'Processor', timing: 'Prior to docs', status: 'Added', source: 'Auto · credit report', released: false, generated: true },
+  { id: 'U5', list: 'uw', title: 'HOA certification and dues statement', assigned: 'Processor', signoff: 'Underwriter', timing: 'Prior to docs', status: 'Open', note: 'Ordered Oct 6 · ETA Oct 16', source: 'Auto · PUD', released: true },
+  { id: 'U6', list: 'uw', title: 'Signed initial 1003', assigned: 'Loan officer', signoff: 'Underwriter', timing: 'Prior to docs', status: 'Open', source: 'Auto · standard', released: true },
+  { id: 'U7', list: 'uw', title: 'Homeowner’s insurance declarations page', assigned: 'Processor', signoff: 'Closer', timing: 'Prior to closing', status: 'Satisfied', note: 'Received Oct 11 from Valley Home Insurance', doc: true, source: 'Auto · standard', released: true },
+  { id: 'U8', list: 'uw', title: 'Verbal VOE within 10 business days of note date', assigned: 'Processor', signoff: 'Underwriter', timing: 'Prior to closing', status: 'Open', note: 'Scheduled automatically at Final approved', source: 'Auto · Fannie guide', released: true },
+  { id: 'U9', list: 'uw', title: 'Wire instructions verified by phone with title', assigned: 'Funder', signoff: 'Funder', timing: 'Prior to funding', status: 'Open', source: 'Auto · standard', released: true },
+];
+
+const ORDERS = [
+  ['Credit report (tri-merge)', 'Credit vendor', 'Auto · application authorized', 'Received', 'Sep 29'],
+  ['Payroll + employment data', 'Payroll connection', 'Auto · borrower authorized', 'Received', 'Sep 29'],
+  ['Bank data (2 months)', 'Plaid', 'Auto · borrower authorized', 'Received', 'Oct 1'],
+  ['Tax transcripts (W-2, 1040)', 'TaxStatus', 'Auto · entered Processing', 'Received', 'Oct 3'],
+  ['AVM', 'Clear Capital', 'Auto · address entered', 'Received', 'Sep 29'],
+  ['Appraisal', 'AMC on file', 'Auto · intent to proceed', 'Received', 'Oct 9'],
+  ['Title preliminary report', 'Title company', 'Auto · entered Processing', 'Received', 'Oct 3'],
+  ['Flood certification', 'Flood vendor', 'Auto · entered Processing', 'Received', 'Oct 2'],
+  ['Fraud and identity report', 'Fraud vendor', 'Auto · entered Processing', 'Received', 'Oct 2'],
+  ['HOA certification', 'Rancho Larkspur HOA', 'Auto · PUD verified', 'Ordered', 'ETA Oct 16'],
+  ['Verbal VOE', 'Processor task', 'Auto · at Final approved', 'Scheduled', 'Within 10 days of close'],
+];
+
+const FEES = [
+  { sec: 'A. Origination charges' },
+  { name: 'Underwriting fee', le: 1195, cur: 1195, agent: 1195, b: '0%' },
+  { name: 'Processing fee', le: 695, cur: 695, agent: 695, b: '0%' },
+  { sec: 'B. Services you cannot shop for' },
+  { name: 'Appraisal fee', le: 650, cur: 650, agent: 650, b: '0%' },
+  { name: 'Credit report', le: 65, cur: 65, agent: 65, b: '0%' },
+  { name: 'Flood certification', le: 12, cur: 12, agent: 12, b: '0%' },
+  { name: 'Tax transcripts', le: 30, cur: 30, agent: 30, b: '0%' },
+  { sec: 'C. Services you can shop for (provider from our list)' },
+  { name: 'Title: lender’s policy', le: 1180, cur: 1240, agent: 1240, b: '10%' },
+  { name: 'Title: settlement fee', le: 1450, cur: 1450, agent: 1525, b: '10%', id: 'settle' },
+  { sec: 'E. Taxes and government fees' },
+  { name: 'Recording fees', le: 125, cur: 138, agent: 138, b: '10%' },
+  { sec: 'F. Prepaids' },
+  { name: 'Prepaid interest', le: 1570.68, cur: null, agent: null, b: 'No limit', id: 'perdiem' },
+  { name: 'Homeowner’s insurance, 12 months', le: 1800, cur: 1704, agent: 1704, b: 'No limit' },
+  { sec: 'G. Initial escrow payment' },
+  { name: 'Property taxes, 3 months', le: 1950, cur: 2028, agent: 2028, b: 'No limit' },
+];
+
+const AUDIT = [
+  ['Oct 12, 9:14 AM', 'System', 'Ran 18 compliance and QC checks on entering In underwriting', null],
+  ['Oct 12, 9:14 AM', 'System', 'Generated 9 underwriting conditions from rules (awaiting underwriter review)', null],
+  ['Oct 12, 9:13 AM', 'T. Nguyen (Processor)', 'Moved milestone', ['In processing', 'Sent to underwriting']],
+  ['Oct 9, 3:41 PM', 'System', 'Appraisal received from AMC; appraisal review unlocked', null],
+  ['Oct 8, 11:02 AM', 'System', 'Sent gift letter to donor and borrower for e-signature', null],
+  ['Oct 6, 10:20 AM', 'System', 'Ordered HOA certification (PUD verified)', null],
+  ['Oct 3, 2:15 PM', 'T. Nguyen (Processor)', 'Updated recording fees', ['$125.00', '$138.00']],
+  ['Oct 1, 8:47 AM', 'Maya Okafor (Borrower)', 'Signed intent to proceed', null],
+  ['Sep 30, 4:05 PM', 'Disclosure desk', 'Sent Loan Estimate electronically (e-consent on file)', null],
+  ['Sep 29, 1:30 PM', 'J. Reyes (LO)', 'Changed property type after records check', ['Single family', 'PUD']],
+  ['Sep 29, 1:31 PM', 'J. Reyes (LO)', 'Ran pricing: 6.125%, 0.18 points', null],
+  ['Sep 29, 1:12 PM', 'System', 'Application complete: all 6 TRID items received; disclosure clock started', null],
+];
+const audit = (who, what, diff) => AUDIT.unshift([now(), who, what, diff || null]);
+
+const PIPE = [
+  ['Maya Okafor', 'LN-2026-10482', 'In underwriting', 0, '2026-11-13', 520000, '', true],
+  ['Luis and Ana Ferreira', 'LN-2026-10471', 'Conditionally approved', 3, '2026-10-30', 412000, 'Appraisal value 3% under contract'],
+  ['Priya Raman', 'LN-2026-10466', 'In closing', 1, '2026-10-21', 688500, ''],
+  ['Marcus Bell', 'LN-2026-10490', 'In processing', 6, '2026-11-20', 298000, '6 days in stage'],
+  ['Hannah Cho', 'LN-2026-10495', 'Disclosures', 1, '—', 455000, 'LE due Oct 14'],
+  ['Devon and Kim Tate', 'LN-2026-10457', 'Wire requested', 0, '2026-10-14', 610000, ''],
+  ['Rosa Delgado', 'LN-2026-10499', 'Loan origination', 2, '—', 350000, 'Property type unverified'],
+  ['Samuel Ortiz', 'LN-2026-10462', 'Suspended', 4, '2026-10-28', 375000, 'Self-employed 8 months'],
+  ['Grace Lin', 'LN-2026-10493', 'Sent to underwriting', 0, '2026-11-24', 540000, ''],
+  ['Nora Fitzgerald', 'LN-2026-10451', 'Pending signing', 1, '2026-10-16', 725000, 'CD received Oct 12'],
+  ['Ethan Brooks', 'LN-2026-10448', 'Closing audit', 0, '2026-10-13', 389000, 'Notary page missing initials'],
+  ['Carlos Mendez', 'LN-2026-10431', 'Post-close audit', 2, '2026-10-02', 465000, 'Final title policy outstanding'],
+];
+const ROLE_MS = {
+  Processor: ['Sent to processing', 'In processing', 'Sent to underwriting', 'In underwriting', 'Conditionally approved', 'Suspended', 'Final approved'],
+  Underwriter: ['Sent to underwriting', 'In underwriting', 'Conditionally approved', 'Suspended'],
+  Closer: ['Final approved', 'In closing', 'Docs out', 'Pending signing', 'Signing completed', 'Docs back', 'Closing audit'],
+  Funder: ['Closing audit', 'In funding', 'Wire requested', 'Wire received', 'Funded'],
+  'Post-closer': ['Funded', 'Post-close audit', 'Investor delivery'],
+  'Disclosure desk': ['Loan origination', 'Disclosures'],
+};
+ROLE_MS['Processing manager'] = ROLE_MS.Processor;
+ROLE_MS['Underwriting manager'] = ROLE_MS.Underwriter;
+ROLE_MS['Closing manager'] = [...ROLE_MS.Closer, ...ROLE_MS.Funder];
+
+// Documents (eFolder). Fields: [label, value, check, note, linked data id]
+const DOCS = [
+  { id: 'paystub', group: 'Income', name: 'Pay stub · period ending Sep 25', source: 'Payroll connection (digital)', rec: 'Sep 29', cond: 'P1', fields: [['Employer', 'Kaiser Permanente', 'ok'], ['Pay period', 'Sep 12 – Sep 25, 2026', 'ok'], ['Base pay this period', '$5,069.23', 'ok'], ['YTD gross', '$98,850.00', 'ok'], ['Monthly base (calculated)', '$10,983.33', 'warn', 'Application says $11,250.00', 'income']] },
+  { id: 'w2-2025', group: 'Income', name: 'W-2 transcript · 2025', source: 'TaxStatus (IRS transcript)', rec: 'Oct 3', cond: 'P2', fields: [['Employer', 'Kaiser Permanente', 'ok'], ['Wages (box 1)', '$131,200.00', 'ok']] },
+  { id: 'w2-2024', group: 'Income', name: 'W-2 transcript · 2024', source: 'TaxStatus (IRS transcript)', rec: 'Oct 3', cond: 'P2', fields: [['Employer', 'Kaiser Permanente', 'ok'], ['Wages (box 1)', '$128,400.00', 'ok']] },
+  { id: 'bank-sep', group: 'Assets', name: 'Golden 1 checking ••4471 · Sep', source: 'Plaid (digital)', rec: 'Oct 1', cond: 'P3', fields: [['Account holder', 'Maya Okafor', 'ok'], ['Statement period', 'Sep 1 – Sep 30, 2026', 'ok'], ['Ending balance', '$52,310.44', 'warn', 'Application says $48,000.00', 'bank'], ['Large deposit', '$6,500.00 on Sep 3', 'bad', 'More than 50% of monthly income'], ['Recurring payment', '$412.00 to Westlake Financial', 'bad', 'Not on application or credit report', 'westlake']],
+    tx: [['Sep 1', 'Payroll · Kaiser Permanente', '+5,069.23'], ['Sep 3', 'Mobile deposit', '+6,500.00', 1], ['Sep 5', 'Westlake Financial', '−412.00', 1], ['Sep 8', 'PG&E', '−184.62'], ['Sep 12', 'Rent · Laguna Commons', '−2,950.00'], ['Sep 15', 'Payroll · Kaiser Permanente', '+5,069.23'], ['Sep 22', 'Toyota Motor Credit', '−398.00'], ['Sep 29', 'Payroll · Kaiser Permanente', '+5,069.23']] },
+  { id: 'bank-aug', group: 'Assets', name: 'Golden 1 checking ••4471 · Aug', source: 'Plaid (digital)', rec: 'Oct 1', cond: 'P3', fields: [['Ending balance', '$41,786.10', 'ok'], ['Recurring payment', '$412.00 to Westlake Financial', 'bad', 'Same payment in August', 'westlake']] },
+  { id: 'gift', group: 'Assets', name: 'Gift letter', source: 'Generated by Keystone · e-sign', rec: 'Sent Oct 8', status: 'Awaiting signature', cond: 'P5', fields: [['Donor', 'Adaeze Okafor (mother)', 'ok'], ['Amount', '$20,000.00', 'ok'], ['Borrower signed', 'Oct 8', 'ok'], ['Donor signed', 'Pending', 'warn', 'Reminder sent Oct 10']] },
+  { id: 'credit', group: 'Credit', name: 'Tri-merge credit report', source: 'Credit vendor', rec: 'Sep 29', fields: [['Scores (EQ / EX / TU)', '738 / 742 / 751', 'ok'], ['Middle score', '742', 'ok'], ['Accounts reporting', '5', 'warn', 'Application lists 4'], ['Inquiries, last 90 days', '2', 'warn', 'Inquiry letter generated'], ['Other address, last 2 years', '220 W Pine St, Lodi', 'warn', 'Address letter generated']] },
+  { id: 'appraisal', group: 'Property', name: 'Appraisal report (PDF + XML)', source: 'AMC on file', rec: 'Oct 9', fields: [['Appraised value', '$655,000', 'ok'], ['Property type', 'PUD', 'ok', 'Matches verified type'], ['Condition / quality', 'C3 / Q4', 'ok'], ['Site', '0.14 acres', 'ok'], ['HOA dues', '$85/mo', 'ok']] },
+  { id: 'avm', group: 'Property', name: 'AVM report', source: 'Clear Capital', rec: 'Sep 29', fields: [['Estimated value', '$662,000', 'ok'], ['Confidence', '91%', 'ok']] },
+  { id: 'title', group: 'Property', name: 'Preliminary title report', source: 'Title company', rec: 'Oct 3', fields: [['Property type per records', 'Planned unit development', 'ok'], ['Annual property taxes', '$8,112.00 ($676/mo)', 'warn', 'Application says $650/mo', 'tax'], ['Liens to pay off', 'Seller’s first mortgage', 'ok']] },
+  { id: 'contract', group: 'Property', name: 'Purchase contract (executed)', source: 'Uploaded by loan officer', rec: 'Sep 29', cond: 'P4', fields: [['Price', '$650,000', 'ok'], ['Seller credit', '$9,750', 'ok'], ['Close of escrow', 'Nov 13, 2026', 'ok']] },
+  { id: 'hoa', group: 'Property', name: 'HOA certification', source: 'Rancho Larkspur HOA', rec: 'Expected Oct 16', status: 'Not received', cond: 'U5', fields: [] },
+  { id: 'le', group: 'Disclosures', name: 'Loan Estimate', source: 'Generated by Keystone', rec: 'Sent Sep 30', fields: [['Delivered', 'Electronically, Wed Sep 30', 'ok'], ['Presumed received', 'Sat Oct 3', 'ok'], ['Intent to proceed', 'Oct 1', 'ok']] },
+];
+
+// ---------- calculations ----------
+function perDiem() {
+  const close = parseDate(state.closeDate);
+  const daily = LOAN.amount * LOAN.rate / 100 / 365;
+  const last = new Date(close.getFullYear(), close.getMonth() + 1, 0).getDate();
+  const days = last - close.getDate() + 1;
+  const firstPay = new Date(close.getFullYear(), close.getMonth() + 2, 1);
+  return { daily, days, amount: Math.round(daily * days * 100) / 100, firstPay };
+}
+function cdDates() {
+  const close = parseDate(state.closeDate);
+  const receiveBy = addBiz(close, -3);
+  const sendBy = addBiz(receiveBy, -3);
+  return { close, receiveBy, sendBy };
+}
+function feeCur(f) { return f.id === 'perdiem' ? perDiem().amount : f.cur; }
+function feeAgent(f) { return f.id === 'perdiem' ? perDiem().amount : f.agent; }
+function tenPct() {
+  const t = FEES.filter(f => f.b === '10%');
+  const le = t.reduce((s, f) => s + f.le, 0), cur = t.reduce((s, f) => s + feeCur(f), 0), agent = t.reduce((s, f) => s + feeAgent(f), 0);
+  return { le, cur, agent, limit: le * 1.1 };
+}
+function zeroViolations() { return FEES.filter(f => f.b === '0%' && (feeCur(f) > f.le || feeAgent(f) > f.le)); }
+function dti() {
+  const housing = pAndI + LOAN.taxes + LOAN.hoi + LOAN.hoa;
+  const other = LIABS.reduce((s, l) => s + l.used, 0);
+  return { housing, other, front: housing / LOAN.income * 100, back: (housing + other) / LOAN.income * 100, ifAdded: (housing + other + (state.undisclosedConfirmed ? 0 : 412)) / LOAN.income * 100 };
+}
+const openMismatches = () => DATA.filter(d => d.status === 'mismatch').length;
+const statedLeft = () => DATA.filter(d => d.status === 'stated' || d.status === 'mismatch').length;
+const draftConds = () => CONDS.filter(c => c.status === 'Added').length;
+const DONE_ST = ['Cleared', 'Waived'];
+const openUW = () => CONDS.filter(c => c.list === 'uw' && !DONE_ST.includes(c.status) && c.timing === 'Prior to docs').length;
+
+function runChecks() {
+  const c = cdDates(), t = tenPct(), z = zeroViolations();
+  const lockExp = parseDate(LOAN.lockExp);
+  const closeD = parseDate(state.closeDate);
+  const pd = perDiem();
+  const d = dti();
+  return [
+    { g: 'TRID', name: 'Loan Estimate timing', res: 'ok', detail: 'Application complete Tue Sep 29. LE sent Wed Sep 30, inside the 3-business-day window.' },
+    { g: 'TRID', name: 'E-consent before electronic delivery', res: 'ok', detail: 'E-consent captured Sep 28 during application.' },
+    { g: 'TRID', name: 'Intent to proceed before fees charged', res: 'ok', detail: 'Intent to proceed Oct 1. Appraisal ordered Oct 2.' },
+    { g: 'TRID', name: 'Zero-tolerance fees', res: z.length ? 'bad' : 'ok', detail: z.length ? `${z.length} fee(s) above Loan Estimate. Cure required.` : 'No zero-tolerance fee has increased.' },
+    { g: 'TRID', name: '10% tolerance bucket', res: t.agent > t.limit ? 'bad' : (t.agent > t.le ? 'warn' : 'ok'), detail: `${money(t.agent, 2)} of ${money(t.limit, 2)} allowed (LE total ${money(t.le, 2)}).` },
+    { g: 'TRID', name: 'Closing Disclosure timing', res: 'warn', detail: `Closing ${fmtDate(c.close)}. Borrower must receive the CD by ${fmtDate(c.receiveBy)}. Send electronically by ${fmtDate(c.sendBy)}.` },
+    { g: 'TRID', name: '7-business-day wait after LE', res: 'ok', detail: 'LE sent Sep 30. Earliest closing Thu Oct 8.' },
+    { g: 'ECOA / Reg B', name: 'Appraisal copy to borrower', res: 'warn', detail: 'Appraisal received Oct 9. Deliver promptly, and no later than 3 business days before closing.' },
+    { g: 'ATR / QM', name: 'Qualified mortgage points and fees', res: 'ok', detail: 'Points and fees 1.42% of loan amount (limit 3%).' },
+    { g: 'HOEPA / HPML', name: 'Higher-priced and high-cost tests', res: 'ok', detail: 'APR 6.29% vs. APOR 6.05%. Below the 1.5-point HPML threshold.' },
+    { g: 'LO compensation', name: 'Compensation not based on loan terms', res: 'ok', detail: 'Plan: 100 bps of loan amount, flat.' },
+    { g: 'KYC / AML', name: 'Identity and OFAC screening', res: 'ok', detail: 'Identity verified. No OFAC match.' },
+    { g: 'HMDA', name: 'Required data fields', res: 'warn', detail: 'Demographic information: borrower response pending.' },
+    { g: 'Lock', name: 'Rate lock covers closing date', res: closeD > lockExp ? 'bad' : 'ok', detail: closeD > lockExp ? `Lock expires ${fmtDate(lockExp)}, before closing. Extend lock or move the date.` : `Lock expires ${fmtDate(lockExp)}. Closing ${fmtDate(closeD)}.` },
+    { g: 'QC', name: 'Stated vs. verified data', res: fixAlerts().length ? 'warn' : 'ok', detail: fixAlerts().length ? `${fixAlerts().length} item(s) on the application differ from verified data. See alerts.` : 'Application matches verified data.' },
+    { g: 'QC', name: 'Undisclosed debt', res: state.undisclosedConfirmed ? 'ok' : 'warn', detail: state.undisclosedConfirmed ? 'Westlake Financial added to liabilities. DU rerun needed.' : '$412/mo recurring payment on bank statements is not on the application or credit report.' },
+    { g: 'QC', name: 'DTI within AUS findings', res: d.back > 50 ? 'bad' : 'ok', detail: `Back-end DTI ${d.back.toFixed(1)}%. DU approved at 45.7%.` },
+    { g: 'QC', name: 'Fraud report alerts', res: 'ok', detail: 'All alerts cleared Oct 2.' },
+  ];
+}
+
+// ---------- render ----------
+function render() {
+  const r = roleNow(), n = PEOPLE[r] || r;
+  $('#meName').textContent = n; $('#meRole').textContent = r; $('#meAvatar').textContent = n.split(' ').map(w => w[0]).join('').slice(0, 2);
+  document.querySelectorAll('.nav button').forEach(b => b.setAttribute('aria-current', String(b.dataset.view === 'docs' ? (state.view === 'loan' && state.split) : b.dataset.view === state.view)));
+  $('#main').innerHTML = state.view === 'pipeline' ? renderPipeline() : state.view === 'reports' ? renderReporting() : renderLoan();
+}
+
+function roleNow() { return $('#role').value; }
+
+// ---------- role workflows ----------
+const feeMismatches = () => FEES.filter(f => f.name && feeAgent(f) !== feeCur(f)).length;
+const cleared = id => DONE_ST.includes(CONDS.find(c => c.id === id).status);
+const m = key => !!state.manual[key];
+// how: auto = system did it, check = system checks it, you = person marks it
+const WORKFLOWS = {
+  'Loan officer': { stage: 'Origination', steps: [
+    { t: 'Review application and loan purpose', how: 'you', key: 'lo-app', go: 'app' },
+    { t: 'Borrower authorized credit and digital data pulls', how: 'auto', done: () => true, detail: 'Sep 29 · payroll, Plaid, TaxStatus' },
+    { t: 'Verify property facts before pricing', how: 'auto', done: () => true, detail: 'Records showed PUD; corrected before pricing', go: 'property' },
+    { t: 'Run pricing with verified inputs', how: 'auto', done: () => true, detail: '6.125% · locked to Nov 20' },
+    { t: 'Generate fee estimate', how: 'auto', done: () => true, detail: 'By county and city', go: 'fees' },
+    { t: 'Application complete: send to disclosures', how: 'auto', done: () => true, detail: 'All 6 TRID items on Sep 29' },
+    { t: 'Sign the initial 1003', how: 'check', done: () => cleared('U6'), detail: 'Condition U6', go: 'conditions' },
+  ]},
+  Processor: { stage: 'Processing', steps: [
+    { t: 'Intent to proceed received', how: 'auto', done: () => true, detail: 'Oct 1' },
+    { t: 'Third-party orders placed', how: 'auto', done: () => true, detail: 'Placed on entering processing', go: 'orders' },
+    { t: 'Resolve data alerts on the application', how: 'check', done: () => fixAlerts().length === 0, detail: () => `${fixAlerts().length} left`, go: 'alerts' },
+    { t: 'Collect gift letter signatures', how: 'check', done: () => cleared('P5'), detail: 'Condition P5', go: 'conditions' },
+    { t: 'Review minimum submission requirements', how: 'you', key: 'pr-msr', go: 'conditions' },
+    { t: 'HOA certification received', how: 'check', done: () => false, detail: 'Auto-ordered Oct 6 · ETA Oct 16', go: 'orders' },
+    { t: 'Submit to underwriting', how: 'check', done: () => state.ms >= 4, detail: 'Oct 12' },
+  ]},
+  Underwriter: { stage: 'Underwriting', steps: [
+    { t: 'Review AUS findings', how: 'auto', done: () => true, detail: 'DU Approve/Eligible, run 3' },
+    { t: 'Review credit', how: 'you', key: 'uw-credit', go: 'credit' },
+    { t: 'Review income and employment', how: 'you', key: 'uw-income', go: 'income' },
+    { t: 'Resolve the possible undisclosed debt', how: 'check', done: () => state.undisclosedConfirmed, detail: 'Westlake Financial $412/mo', go: 'assets' },
+    { t: 'Review property and appraisal', how: 'you', key: 'uw-prop', go: 'property' },
+    { t: 'Validate auto-generated conditions', how: 'check', done: () => draftConds() === 0, detail: () => `${draftConds()} new conditions to validate`, go: 'conditions' },
+    { t: 'Review compliance and QC results', how: 'you', key: 'uw-comp', go: 'compliance' },
+    { t: 'Make the underwriting decision', how: 'check', done: () => state.ms >= 6, detail: 'Buttons in the milestone bar' },
+  ]},
+  Closer: { stage: 'Closing', steps: [
+    { t: 'Confirm closing date with closing agent', how: 'you', key: 'cl-date', go: 'fees' },
+    { t: 'Reconcile fees with closing agent', how: 'check', done: () => feeMismatches() === 0, detail: () => `${feeMismatches()} line(s) differ`, go: 'fees' },
+    { t: 'Send Closing Disclosure', how: 'you', key: 'cl-cd', detail: () => `Send by ${fmtDate(cdDates().sendBy)}`, go: 'fees' },
+    { t: 'Homeowner’s insurance on file', how: 'check', done: () => cleared('U7'), detail: 'Condition U7', go: 'conditions' },
+    { t: 'Draw closing documents', how: 'you', key: 'cl-docs' },
+    { t: 'Signed closing package uploaded', how: 'check', done: () => state.ms >= 11, detail: 'Docs back from the closing agent', go: 'caudit' },
+    { t: 'Closing audit passed', how: 'check', done: () => closingAuditPassed(), detail: () => `${openAudit(CLOSING_AUDIT).length} finding(s) open`, go: 'caudit' },
+  ]},
+  Funder: { stage: 'Funding', steps: [
+    { t: 'Review signed documents', how: 'you', key: 'fu-docs' },
+    { t: 'Verify wire instructions by phone', how: 'check', done: () => cleared('U9'), detail: 'Condition U9', go: 'conditions' },
+    { t: 'Final fee balance with settlement statement', how: 'check', done: () => feeMismatches() === 0, detail: () => `${feeMismatches()} line(s) differ`, go: 'fees' },
+    { t: 'Closing audit passed', how: 'check', done: () => closingAuditPassed(), detail: 'Required before the wire request', go: 'caudit' },
+    { t: 'Request wire from warehouse line', how: 'you', key: 'fu-wire' },
+  ]},
+  'Disclosure desk': { stage: 'Disclosures', steps: [
+    { t: 'Application complete: all 6 TRID items', how: 'auto', done: () => true, detail: 'Sep 29 · disclosure clock started' },
+    { t: 'Loan Estimate due date tracked', how: 'auto', done: () => true, detail: 'Due Fri Oct 2 · sent Wed Sep 30' },
+    { t: 'Pricing run and pricing sheet in file', how: 'auto', done: () => true, detail: '6.125% · 0.18 points · Sep 29' },
+    { t: 'Pricing sheet matches the loan application', how: 'check', done: () => true, detail: 'Loan amount, rate, program, property type (PUD), LTV, occupancy' },
+    { t: 'Fee estimate generated', how: 'auto', done: () => true, detail: 'By county and city', go: 'fees' },
+    { t: 'Estimated fees worksheet from settlement agent on file', how: 'you', key: 'dd-worksheet', go: 'fees' },
+    { t: 'File contacts complete', how: 'check', done: () => true, detail: 'LO, processor, settlement agent, title, agents', go: 'contacts' },
+    { t: 'E-consent on file', how: 'auto', done: () => true, detail: 'Sep 28' },
+    { t: 'Disclosure package complete', how: 'you', key: 'dd-package', detail: 'LE, service provider list, appraisal notice, toolkit, state forms', go: 'wf-disc' },
+    { t: 'Initial disclosures sent', how: 'auto', done: () => true, detail: 'Electronically, Sep 30' },
+    { t: 'Intent to proceed received', how: 'auto', done: () => true, detail: 'Oct 1' },
+  ]},
+  'Lock desk': { stage: 'Lock and secondary', steps: [
+    { t: 'Lock request matches the loan profile', how: 'check', done: () => true, detail: () => `${LOAN.loanType} · ${LOAN.investor} · ${LOAN.propertyType} · ${LOAN.occupancy}` },
+    { t: 'Lock confirmed', how: 'auto', done: () => true, detail: () => `Locked Sep 29 · expires ${fmtDate(parseDate(LOAN.lockExp))}` },
+    { t: 'Lock covers the closing date', how: 'check', done: () => parseDate(state.closeDate) <= parseDate(LOAN.lockExp), detail: () => `Closing ${fmtDate(parseDate(state.closeDate))}`, go: 'wf-lock' },
+    { t: 'Price changes from loan changes applied', how: 'check', done: () => true, detail: 'Property type corrected before lock: no change' },
+    { t: 'Best execution investor selected', how: 'you', key: 'lk-bestex', go: 'wf-lock' },
+    { t: 'Loan committed to investor', how: 'you', key: 'lk-commit', go: 'wf-lock' },
+    { t: 'Final price confirmed at funding', how: 'check', done: () => state.ms >= 16, detail: 'Locks at funding' },
+    { t: 'Purchase advice received and reconciled', how: 'check', done: () => !!state.purchased, go: 'wf-lock' },
+    { t: 'Warehouse line paid off', how: 'check', done: () => !!state.purchased, detail: 'From investor proceeds' },
+  ]},
+  'Post-closer': { stage: 'Post-close', steps: [
+    { t: 'Post-close audit passed', how: 'check', done: () => postAuditPassed(), detail: () => `${openAudit(POST_AUDIT).length} finding(s) open`, go: 'delivery' },
+    { t: 'Trailing documents received', how: 'check', done: () => !!state.trailing, detail: 'Recorded deed of trust, final title policy', go: 'delivery' },
+    { t: 'Investor package complete', how: 'check', done: () => packageMissing().length === 0, detail: () => `${packageMissing().length} document(s) missing`, go: 'delivery' },
+    { t: 'Delivered to investor', how: 'check', done: () => !!state.delivered, go: 'delivery' },
+  ]},
+};
+const BASE_ROLE = { 'Branch manager': 'Loan officer', 'Processing manager': 'Processor', 'Underwriting manager': 'Underwriter', 'Closing manager': 'Closer', 'Capital markets manager': 'Lock desk' };
+function wfFor(role) { return WORKFLOWS[role] || WORKFLOWS[BASE_ROLE[role]]; }
+function stepDone(st) { return st.how === 'you' ? m(st.key) : st.done(); }
+function wfStatus(role) {
+  const wf = wfFor(role); const done = wf.steps.filter(stepDone).length;
+  const next = wf.steps.find(st => !stepDone(st));
+  return { wf, done, total: wf.steps.length, next };
+}
+const BELL = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>';
+const ROLE_TAB = { 'Loan officer': 'wf-lo', 'Disclosure desk': 'wf-disc', Processor: 'wf-proc', Underwriter: 'wf-uw', Closer: 'wf-closer', Funder: 'wf-funder', 'Post-closer': 'wf-post', 'Lock desk': 'wf-lock' };
+const TAB_ROLE = Object.fromEntries(Object.entries(ROLE_TAB).map(([r, t]) => [t, r]));
+const PEOPLE = { 'Disclosure desk': 'Sofia Ramirez', 'Lock desk': 'Victor Hale', 'Capital markets manager': 'Helen Cho', 'Post-closer': 'Nia Brooks', 'Loan officer': 'Jordan Reyes', Processor: 'Tam Nguyen', Underwriter: 'Grace Whitfield', Closer: 'Omar Haddad', Funder: 'Lena Park', 'Branch manager': 'Alicia Romero', 'Processing manager': 'Dana Ruiz', 'Underwriting manager': 'Paul Okonkwo', 'Closing manager': 'Rachel Stein' };
+const baseRole = r => BASE_ROLE[r] || r;
+const myTab = () => ROLE_TAB[baseRole(roleNow())];
+const reserves = () => { const pitia = pAndI + LOAN.taxes + LOAN.hoi + LOAN.hoa; return { amt: 171450 - 147860, months: (171450 - 147860) / pitia }; };
+
+function stepList(role, canAct) {
+  const { wf, next } = wfStatus(role);
+  const howLbl = { auto: 'Done by system', check: 'System checks', you: 'You confirm' };
+  const val = v => typeof v === 'function' ? v() : v;
+  return `<ol class="wf-steps one">${wf.steps.map((st, i) => { const d = stepDone(st); return `<li class="${st === next ? 'cur' : ''}">
+    <span class="mark ${d ? 'ok' : st === next ? 'warn' : 'pend'}">${d ? '✓' : i + 1}</span>
+    <div><span class="${d ? 'done-t' : ''}">${st.t}</span><div class="how">${howLbl[st.how]}${st.detail ? ' · ' + val(st.detail) : ''}</div></div>
+    <span class="row" style="gap:6px">${st.go ? `<button class="btn sm" data-goto="${st.go}">Open</button>` : ''}${st.how === 'you' && !d && canAct ? `<button class="btn sm primary" data-act="wfdone" data-key="${st.key}">Mark done</button>` : ''}</span></li>`; }).join('')}</ol>`;
+}
+
+// Compact "your next step" strip under the loan header
+function nextStrip() {
+  const role = roleNow(), base = baseRole(role);
+  const { done, total, next } = wfStatus(base);
+  const val = v => typeof v === 'function' ? v() : v;
+  return `<section class="card wf-strip">
+    <span class="label">${role.includes('manager') ? base + ' next step' : 'Your next step'}</span>
+    ${next ? `<b>${next.t}</b>${next.detail ? `<span class="small muted">${val(next.detail)}</span>` : ''}` : `<b>All ${base.toLowerCase()} steps done</b>`}
+    <span class="wf-mini"><span class="wf-prog"><span style="width:${done / total * 100}%"></span></span><span class="small muted num">${done}/${total}</span></span>
+    <button class="btn sm" data-tab="${ROLE_TAB[base]}">Open ${base.toLowerCase()} workflow</button>
+  </section>`;
+}
+
+function renderLoan() {
+  const checks = runChecks();
+  const fails = checks.filter(c => c.res === 'bad').length, warns = checks.filter(c => c.res === 'warn').length;
+  const phaseIdx = PHASES.findIndex(p => p[1].includes(state.ms));
+  const msName = state.ms === 6 ? (state.decision || 'Underwriting decision') : MILESTONES[state.ms];
+  const mine = myTab();
+  const wfCount = r => { const s = wfStatus(r); return s.total - s.done; };
+  const groups = [
+    ['Loan file', [
+      ['summary', 'Summary'],
+      ['app', 'Loan application (1003)'],
+    ]],
+    ['The four C’s', [
+      ['credit', 'Character · Credit'],
+      ['income', 'Capacity · Income'],
+      ['assets', 'Capital · Assets'],
+      ['property', 'Collateral · Property'],
+    ]],
+    ['Workflows', Object.entries(ROLE_TAB).map(([r, t]) => [t, r === 'Loan officer' ? 'Loan officer (LO)' : r, wfCount(r), false, t === mine])],
+    ['Tools', [
+      ['conditions', 'Conditions', CONDS.filter(c => !DONE_ST.includes(c.status)).length, draftConds() > 0],
+      ['docs', 'Documents (eFolder)', DOCS.length],
+      ['orders', 'Orders', ORDERS.filter(o => o[3] !== 'Received').length],
+      ['fees', 'Fees and closing'],
+      ['caudit', 'Closing audit', openAudit(CLOSING_AUDIT).filter(f => f.sev === 'bad').length || undefined, openAudit(CLOSING_AUDIT).some(f => f.sev === 'bad')],
+      ['delivery', 'Post-close and delivery'],
+      ['compliance', 'Compliance and QC', fails + warns, fails + warns > 0],
+      ['contacts', 'File contacts'],
+      ['audit', 'Audit trail', AUDIT.length],
+    ]],
+  ];
+  const SCREENS = { summary: tabOverview, app: tabApp, credit: tabCredit, income: tabIncome, assets: tabAssets, property: tabProperty, conditions: tabConditions, orders: tabOrders, fees: tabFees, caudit: tabAudit2, delivery: tabDelivery, compliance: () => tabCompliance(checks), contacts: tabContacts, audit: tabAudit };
+  const screen = TAB_ROLE[state.tab] ? tabRole(TAB_ROLE[state.tab]) : (SCREENS[state.tab] || tabOverview)();
+  return `
+  <div class="row spread"><button class="btn sm" data-view="pipeline">← Back to pipeline</button><span class="sample">Sample loan file for the prototype. Names, numbers and vendors are illustrative.</span></div>
+  <div class="loan-tools">
+    <div class="search"><label for="loanSearch" class="label">Find in this loan</label><input id="loanSearch" type="search" placeholder="Try “taxes”, “gift”, “conditions”, “declarations”" autocomplete="off"><div id="searchResults" class="results" hidden></div></div>
+    <div class="row"><div class="presence small muted"><span class="dot"></span> Tam Nguyen (Processor) is also in this file</div>
+    <button class="bell ${allAlerts().length ? 'has' : ''}" data-act="alerts" aria-label="Alerts, ${allAlerts().length}">${BELL}<span>Alerts</span>${allAlerts().length ? `<span class="badge-n">${allAlerts().length}</span>` : ''}</button></div>
+  </div>
+  ${fixAlerts().length ? `<div class="attn"><span class="badge-n">${allAlerts().length}</span><div><b>${fixAlerts().length} gap${fixAlerts().length > 1 ? 's' : ''} between the application and verified data</b><div class="small">${[...new Set(fixAlerts().map(a => a.cat))].join(' · ')}. Fix them in one place.</div></div><button class="btn sm primary" data-act="alerts">Review alerts</button></div>` : ''}
+  <section class="card pad">
+    <div class="loan-head">
+      <div>
+        <div class="row"><h1 class="loan-title">${LOAN.borrower}</h1><span class="mono muted">${LOAN.id}</span></div>
+        <div class="muted">${LOAN.address} · ${LOAN.county}</div>
+      </div>
+      <div class="trust">
+        ${fails ? chip('bad', `${fails} compliance issue${fails > 1 ? 's' : ''}`) : chip('ok', 'No blocking compliance issues')}
+        ${warns ? chip('warn', `${warns} item${warns > 1 ? 's' : ''} to watch`) : ''}
+        <span class="small muted">Checks last ran ${state.lastRun}</span>
+      </div>
+    </div>
+    ${loanProfile()}
+    <div style="margin-top:14px">
+      <div class="status-line">
+        <span>Milestone: <span class="status-now">${msName}</span></span>
+        <span class="muted">Owner: ${state.ms === 6 ? 'Processor (LO can help)' : OWNER[state.ms]}</span>
+        <span class="row" style="gap:8px">${milestoneActions()}</span>
+      </div>
+    </div>
+  </section>
+  ${journey()}
+  ${progressCard()}
+  <div class="file-layout ${state.split ? 'split' : ''}">
+    <nav class="filenav" aria-label="Loan file screens">
+      ${groups.map(([g, items]) => `<div class="fn-group"><div class="fn-label">${g}</div>${items.map(t => `<button id="tab-${t[0]}" ${t[0] === 'docs' ? `data-act="split" aria-pressed="${state.split}"` : `data-tab="${t[0]}" aria-current="${state.tab === t[0]}"`}><span>${t[1]}${t[4] ? ' <span class="you">You</span>' : ''}</span>${t[2] !== undefined ? `<span class="count ${t[3] ? 'alert' : ''}">${t[2]}</span>` : ''}</button>`).join('')}</div>`).join('')}
+    </nav>
+    <div class="workspace ${state.split ? 'split' : ''}"><section style="min-width:0">${screen}</section>${state.split ? renderDocPanel() : ''}</div>
+  </div>
+  ${state.alertsOpen ? renderAlerts() : ''}`;
+}
+
+// ---------- loan header profile ----------
+const PROFILE_OPTS = {
+  purpose: ['Purchase', 'Refinance', 'HELOC'],
+  refiType: ['Rate and term', 'Cash-out', 'Limited cash-out', 'Streamline (FHA)', 'IRRRL (VA)', 'Construction-to-permanent'],
+  loanType: ['Conventional', 'FHA', 'VA', 'USDA'],
+  category: ['Agency', 'Government', 'Jumbo', 'Non-QM'],
+  investor: ['Fannie Mae', 'Freddie Mac', 'Deephaven', 'Angel Oak', 'Verus', 'Chase', 'Wells Fargo', 'Other'],
+  docType: ['Full doc', 'Alt doc', 'DSCR'],
+  altDoc: ['Bank statement', '1099', 'Asset depletion', 'Other'],
+  incomeType: ['Wage earner', 'Self-employed', 'Retired / fixed income', 'Other'],
+  propertyType: ['Single family (detached)', 'Attached single family', 'PUD', 'Condo', '2–4 units', 'Manufactured'],
+  occupancy: ['Primary residence', 'Second home', 'Investment'],
+};
+function profileWarnings() {
+  const L = LOAN, w = [];
+  if (['FHA', 'VA', 'USDA'].includes(L.loanType) && L.category !== 'Government') w.push(`${L.loanType} loans belong in the Government category.`);
+  if (L.loanType === 'Conventional' && L.category === 'Government') w.push('Conventional loans are not Government category.');
+  if (['Fannie Mae', 'Freddie Mac'].includes(L.investor) && L.category !== 'Agency') w.push(`${L.investor} buys Agency loans; category is ${L.category}.`);
+  if (['Deephaven', 'Angel Oak', 'Verus'].includes(L.investor) && L.category !== 'Non-QM') w.push(`${L.investor} is a Non-QM investor; category is ${L.category}.`);
+  if (L.docType !== 'Full doc' && L.category !== 'Non-QM') w.push(`${L.docType} documentation is a Non-QM product.`);
+  if (L.docType === 'DSCR' && L.occupancy !== 'Investment') w.push('DSCR loans are for investment properties.');
+  if (L.docType === 'Alt doc' && !L.altDoc) w.push('Choose the alt doc type.');
+  if (L.purpose === 'Refinance' && !L.refiType) w.push('Choose the refinance type.');
+  if (L.loanType === 'USDA' && L.occupancy !== 'Primary residence') w.push('USDA requires a primary residence.');
+  if (L.fthb === 'Yes' && REO.length) w.push('Marked first-time homebuyer, but the REO section shows owned property.');
+  return w;
+}
+function loanProfile() {
+  const L = LOAN, d = dti(), ed = state.editProfile;
+  const estValue = 655000, ltv = L.amount / Math.min(L.price, estValue) * 100;
+  const sel = k => `<select id="pf-${k}" data-profile="${k}" aria-label="${k}">${k === 'refiType' || k === 'altDoc' ? '<option value="">Choose…</option>' : ''}${PROFILE_OPTS[k].map(o => `<option ${o === L[k] ? 'selected' : ''}>${o}</option>`).join('')}</select>`;
+  const f = (label, val, key) => `<div class="pf"><span>${label}</span>${ed && key ? sel(key) : `<b>${val || '—'}</b>`}</div>`;
+  const purposeVal = L.purpose === 'Refinance' ? `Refinance${L.refiType ? ' · ' + L.refiType : ''}` : L.purpose;
+  const docVal = L.docType === 'Alt doc' ? `Alt doc${L.altDoc ? ' · ' + L.altDoc : ''}` : L.docType;
+  const warns = profileWarnings();
+  return `<div class="profile">
+    <div class="pf-row nums">
+      ${f('Est. value', money(estValue) + ' <span class="small muted">appraisal</span>')}
+      ${f('Purchase price', money(L.price))}
+      ${f('Loan amount', money(L.amount))}
+      ${f('LTV / CLTV', ltv.toFixed(1) + '% / ' + ltv.toFixed(1) + '%')}
+      ${f('DTI', d.front.toFixed(1) + '% / ' + d.back.toFixed(1) + '%')}
+      ${f('Credit score', '742')}
+      ${f('Rate', L.rate.toFixed(3) + '%')}
+      ${f('Lock expires', fmtDate(parseDate(L.lockExp)))}
+      ${f('Closing', fmtDate(parseDate(state.closeDate)))}
+    </div>
+    <div class="pf-row">
+      ${f('Loan purpose', purposeVal, 'purpose')}
+      ${ed && L.purpose === 'Refinance' ? f('Refinance type', L.refiType, 'refiType') : ''}
+      ${f('Loan type', L.loanType, 'loanType')}
+      ${f('Loan category', L.category, 'category')}
+      ${f('Investor', L.investor, 'investor')}
+      ${f('Documentation', docVal, 'docType')}
+      ${ed && L.docType === 'Alt doc' ? f('Alt doc type', L.altDoc, 'altDoc') : ''}
+      ${f('Income type', L.incomeType, 'incomeType')}
+      ${f('Property type', L.propertyType + ' · ' + L.units + ' unit', 'propertyType')}
+      ${f('Occupancy', L.occupancy, 'occupancy')}
+      <div class="pf pf-act"><button class="btn sm ${ed ? 'primary' : ''}" data-act="editProfile">${ed ? 'Done' : 'Edit loan profile'}</button></div>
+    </div>
+    <div class="pf-row">
+      <div class="pf"><span>First-time homebuyer</span><b>${L.fthb}</b><span class="note">${L.fthbSource}</span></div>
+      <div class="pf"><span>Investor experience</span><b>${investorExp().label}</b><span class="note">${investorExp().why}</span></div>
+      <div class="pf"><span>Real estate owned</span><b>${REO.length} propert${REO.length === 1 ? 'y' : 'ies'}</b><span class="note">${REO.filter(r => r.use === 'Investment').length} investment</span></div>
+      <div class="pf pf-act"><button class="btn sm" data-tab="wf-lo">Edit borrower profile</button></div>
+    </div>
+    ${warns.length ? `<div class="pf-warn">${warns.map(x => chip('warn', x)).join(' ')}</div>` : ''}
+  </div>`;
+}
+
+// ---------- readiness ("distance to clear to close") ----------
+let INIT_FIX = null;
+function readiness() {
+  if (INIT_FIX === null) INIT_FIX = fixAlerts().length;
+  const r = [];
+  const fx = fixAlerts();
+  fx.forEach(a => r.push({ w: 3, done: false, label: a.title, act: 'alerts', cat: 'Data' }));
+  for (let i = 0; i < Math.max(0, INIT_FIX - fx.length); i++) r.push({ w: 3, done: true });
+  CONDS.filter(c => c.timing !== 'Prior to funding').forEach(c => r.push({ w: 4, done: DONE_ST.includes(c.status), label: c.status === 'Added' ? `Validate condition: ${c.title}` : `Clear condition: ${c.title}`, go: 'conditions', cat: 'Conditions', role: c.status === 'Added' ? 'Underwriter' : c.signoff }));
+  ['Loan officer', 'Disclosure desk', 'Processor', 'Underwriter'].forEach(role => wfFor(role).steps.forEach(st => r.push({ w: 2, done: stepDone(st), label: st.t, go: st.go || ROLE_TAB[role], cat: role, role })));
+  ORDERS.filter(o => o[3] !== 'Scheduled').forEach(o => r.push({ w: 2, done: o[3] === 'Received', label: `Receive ${o[0]}`, go: 'orders', cat: 'Orders' }));
+  runChecks().forEach(c => r.push({ w: 1, done: c.res !== 'bad', label: `Resolve: ${c.name}`, go: 'compliance', cat: 'Compliance' }));
+  const total = r.reduce((s, x) => s + x.w, 0), done = r.filter(x => x.done).reduce((s, x) => s + x.w, 0);
+  const left = r.filter(x => !x.done);
+  const me = baseRole(roleNow());
+  const next = [...left].sort((a, b) => (b.role === me) - (a.role === me) || b.w - a.w).slice(0, 3);
+  return { pct: Math.round(done / total * 100), left: left.length, total, next };
+}
+function ring(pct) {
+  const r = 26, c = 2 * Math.PI * r;
+  return `<svg class="ring" width="64" height="64" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="${r}" fill="none" stroke="var(--neutral-bg)" stroke-width="7"/><circle cx="32" cy="32" r="${r}" fill="none" stroke="var(--accent)" stroke-width="7" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - pct / 100)}" transform="rotate(-90 32 32)"/><text x="32" y="37" text-anchor="middle" font-size="15" font-weight="600" fill="var(--ink)" font-family="IBM Plex Mono, monospace">${pct}%</text></svg>`;
+}
+function fileBadges() {
+  const docsD = DOCS.filter(x => !/Uploaded/.test(x.source) && x.status !== 'Not received').length, docsT = DOCS.filter(x => x.status !== 'Not received').length;
+  return [
+    ['Disclosed on time', true, 'Loan Estimate sent 1 day after application'],
+    ['Digital-first file', docsD / docsT >= 0.9, `${docsD} of ${docsT} documents received digitally`],
+    ['Zero data gaps', fixAlerts().length === 0, 'Application matches verified data'],
+    ['Conditions clear', CONDS.filter(c => c.timing !== 'Prior to funding' && !DONE_ST.includes(c.status)).length === 0, 'Every pre-closing condition cleared or waived'],
+    ['Compliance clean', !runChecks().some(c => c.res === 'bad'), 'No blocking compliance findings'],
+    ['Clear to close', state.decision === 'Final approved' || state.ms >= 7, 'Final approval issued'],
+  ];
+}
+function progressCard() {
+  const rd = readiness(), role = roleNow(), base = baseRole(role);
+  const ws = wfStatus(base);
+  const val = v => typeof v === 'function' ? v() : v;
+  return `<section class="card progress">
+    <div class="pg-ring">${ring(rd.pct)}<div><div class="an-c">Ready for clear to close</div><b>${rd.left} item${rd.left === 1 ? '' : 's'} left</b><div class="small muted">Every item you finish moves this number</div></div></div>
+    <div class="pg-next">
+      <div class="label">Next best actions</div>
+      <ul class="nb">${rd.next.map(n => `<li><span class="gain">+${Math.max(1, Math.round(n.w / rd.total * 100))}%</span><span class="nb-t">${n.label}</span>${n.role ? `<span class="small muted">${n.role === base ? 'You' : n.role}</span>` : ''}<button class="btn sm" ${n.act ? `data-act="${n.act}"` : `data-goto="${n.go}"`}>Open</button></li>`).join('')}</ul>
+      <div class="small muted">Your ${base.toLowerCase()} steps: <b>${ws.done} of ${ws.total}</b> done${ws.next ? ` · next: ${ws.next.t}` : ''} · <button class="linkbtn" data-tab="${ROLE_TAB[base]}">open workflow</button></div>
+    </div>
+    <div class="pg-badges">
+      <div class="label">File milestones earned</div>
+      <div class="badges">${fileBadges().map(b => `<span class="fb ${b[1] ? 'on' : ''}" title="${b[2]}">${b[1] ? '✓ ' : ''}${b[0]}</span>`).join('')}</div>
+    </div>
+  </section>`;
+}
+
+// ---------- loan journey roadmap ----------
+function neededNow() {
+  const owner = state.ms === 6 ? 'Processor' : OWNER[state.ms];
+  const items = [];
+  const wf = WORKFLOWS[owner];
+  if (wf) wf.steps.filter(st => !stepDone(st)).forEach(st => items.push({ t: st.t, who: owner, go: st.go || ROLE_TAB[owner] }));
+  if (fixAlerts().length) items.push({ t: `Fix ${fixAlerts().length} data gaps on the application`, who: 'Processor or LO', act: 'alerts' });
+  if (state.ms >= 6 && state.decision !== 'Final approved') CONDS.filter(c => c.list === 'uw' && !DONE_ST.includes(c.status) && c.timing === 'Prior to docs').forEach(c => items.push({ t: c.title, who: c.assigned, go: 'conditions' }));
+  return items;
+}
+function journey() {
+  const phaseIdx = PHASES.findIndex(p => p[1].includes(state.ms));
+  const c = cdDates();
+  const msName = state.ms === 6 ? (state.decision || 'Underwriting decision') : MILESTONES[state.ms];
+  const nextMs = state.ms === 6 ? (state.decision === 'Final approved' ? 'In closing' : 'Back to underwriting (resubmit)') : MILESTONES[state.ms + 1] || '—';
+  const need = neededNow();
+  const TARGET = {
+    3: 'Target: underwriting decision Tue Oct 13 · final approval (clear to close) Fri Oct 23',
+    4: `Target: send Closing Disclosure by ${fmtDate(c.sendBy)} · sign ${fmtDate(c.close)}`,
+    5: 'Closing package audited against the loan file before any wire is requested',
+    6: `Target: fund ${fmtDate(c.close)} (purchase funds at signing)`,
+    7: 'Post-close audit, then package and deliver to the investor',
+  };
+  const subs = idxs => idxs.map(i => { const st = i < state.ms ? 'done' : i === state.ms ? 'now' : 'next'; const nm = i === 6 && state.ms === 6 ? (state.decision || MILESTONES[i]) : MILESTONES[i]; return `<span class="sub ${st}">${st === 'done' ? '✓ ' : ''}${nm.charAt(0).toUpperCase() + nm.slice(1)}${state.msDates[i] && st === 'done' ? ` <span class="muted">${state.msDates[i][0]}</span>` : ''}</span>`; }).join('');
+  return `<section class="card journey">
+    <div class="jr-bar" aria-label="Milestones">
+      ${PHASES.map((p, i) => { const st = i < phaseIdx ? 'done' : i === phaseIdx ? 'now' : 'next'; const last = Math.max(...p[1]); return `<div class="jr-step ${st}"><span class="jr-dot">${st === 'done' ? '✓' : i + 1}</span><span class="jr-name">${p[0]}</span><span class="jr-meta">${st === 'done' ? (state.msDates[last] ? state.msDates[last][0] : 'Done') : st === 'now' ? 'Now' : ''}</span></div>`; }).join('')}
+    </div>
+    <div class="jr-sum">
+      <span><span class="label">Now</span> <b>${msName.charAt(0).toUpperCase() + msName.slice(1)}</b> · ${need.length} thing${need.length === 1 ? '' : 's'} needed</span>
+      <span><span class="label">Next</span> ${nextMs.charAt(0).toUpperCase() + nextMs.slice(1)}</span>
+      <button class="btn sm" data-act="journey" aria-expanded="${state.journeyOpen}">${state.journeyOpen ? 'Hide roadmap' : 'Show full roadmap'}</button>
+    </div>
+    ${state.journeyOpen ? `<ol class="jr-list">${PHASES.map((p, i) => {
+      const st = i < phaseIdx ? 'done' : i === phaseIdx ? 'now' : 'next'; const last = Math.max(...p[1]);
+      return `<li class="${st}"><span class="jr-dot">${st === 'done' ? '✓' : i + 1}</span><div>
+        <div class="row spread"><b>${p[0]}</b><span class="small muted">${st === 'done' ? `Completed ${state.msDates[last] ? state.msDates[last][0] + ' · ' + state.msDates[last][1] : ''}` : st === 'now' ? 'In progress' : 'Upcoming'}</span></div>
+        <div class="subs">${subs(p[1])}</div>
+        ${st === 'now' ? `<div class="need"><div class="label">Needed to finish ${msName}</div><ul>${need.map(n => `<li><span>${n.t}</span><span class="small muted">${n.who}</span><button class="btn sm" ${n.act ? `data-act="${n.act}"` : `data-goto="${n.go}"`}>Open</button></li>`).join('') || '<li class="muted">Nothing left. Ready to move on.</li>'}</ul></div>` : ''}
+        ${st === 'next' && TARGET[i] ? `<div class="small muted">${TARGET[i]}</div>` : st === 'now' && TARGET[i] ? `<div class="small muted">${TARGET[i]}</div>` : ''}
+      </div></li>`; }).join('')}</ol>` : ''}
+  </section>`;
+}
+
+// ---------- closing audit & post-close ----------
+const CLOSING_AUDIT = 'closing', POST_AUDIT = 'post';
+function closingFindings() {
+  const pd = perDiem(), c = cdDates();
+  const data = [
+    ['Borrower name', 'Maya A. Okafor', 'Note, deed of trust', 'Maya A. Okafor', 'ok'],
+    ['Property address', LOAN.address, 'Deed of trust', LOAN.address, 'ok'],
+    ['Loan amount', money(LOAN.amount), 'Note', money(LOAN.amount), 'ok'],
+    ['Interest rate', LOAN.rate.toFixed(3) + '%', 'Note', LOAN.rate.toFixed(3) + '%', 'ok'],
+    ['Principal and interest', money(pAndI, 2), 'Note', money(pAndI, 2), 'ok'],
+    ['First payment date', pd.firstPay.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }), 'Note', pd.firstPay.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }), 'ok'],
+    ['Closing date', fmtDate(c.close), 'Deed of trust notary acknowledgment', fmtDate(addBiz(c.close, -1)), 'bad'],
+    ['Cash to close', '$147,860.00', 'Final settlement statement', feeMismatches() ? '$147,935.00' : '$147,860.00', feeMismatches() ? 'warn' : 'ok'],
+    ['APR', '6.290%', 'Final Closing Disclosure', '6.290%', 'ok'],
+  ];
+  const docs = [
+    ['Note', 'Signed and dated', 'ok'],
+    ['Deed of trust', 'Notary date is one day before signing', 'bad'],
+    ['Final Closing Disclosure', `Signed; received ${fmtDate(c.receiveBy)} (3 business days before closing)`, 'ok'],
+    ['Final 1003', 'Borrower signature date missing on page 9', 'warn'],
+    ['Initial escrow account disclosure', 'Not in closing package', 'bad'],
+    ['First payment letter', 'Signed', 'ok'],
+    ['IRS Form 4506-C', 'Signed and dated', 'ok'],
+    ['Occupancy certification', 'Signed', 'ok'],
+    ['Compliance agreement and name affidavit', 'Signed', 'ok'],
+    ['Final settlement statement', 'Signed by borrower and settlement agent', 'ok'],
+    ['Homeowner’s insurance with mortgagee clause', 'Lender named correctly', 'ok'],
+    ['Right to cancel', 'Not required (purchase)', 'ok'],
+  ];
+  const out = [];
+  data.forEach((d, i) => out.push({ id: 'cd' + i, kind: 'data', field: d[0], file: d[1], where: d[2], pkg: d[3], sev: d[4],
+    issue: d[4] === 'bad' ? 'Notary acknowledgment dated one day before the signing date. Needs a corrected acknowledgment.' : d[4] === 'warn' ? `Settlement statement shows the settlement fee at $1,525 vs. $1,450 on the CD (+$75). Within 10% tolerance; reconcile fees.` : '' }));
+  docs.forEach((d, i) => out.push({ id: 'cx' + i, kind: 'doc', field: d[0], pkg: d[1], sev: d[2],
+    issue: d[2] === 'ok' ? '' : d[0] === 'Initial escrow account disclosure' ? 'Required document missing from the signed package.' : d[0] === 'Final 1003' ? 'Signature date missing; request initials and date.' : 'Notary date does not match signing date.' }));
+  return out;
+}
+function postFindings() {
+  return [
+    { id: 'pa1', field: 'Funded loan data matches closing package', pkg: 'Loan amount, rate, dates, borrower, property', sev: 'ok' },
+    { id: 'pa2', field: 'Recorded deed of trust', pkg: state.trailing ? 'Received from county, recorded Nov 18' : 'Waiting on county recording', sev: state.trailing ? 'ok' : 'warn', issue: state.trailing ? '' : 'Trailing document. Delivery can proceed; track until received.' },
+    { id: 'pa3', field: 'Final title policy', pkg: state.trailing ? 'Received' : 'Waiting on title company', sev: state.trailing ? 'ok' : 'warn', issue: state.trailing ? '' : 'Trailing document. Track until received.' },
+    { id: 'pa4', field: 'MERS registration', pkg: 'MIN registered', sev: 'ok' },
+    { id: 'pa5', field: 'HMDA data complete', pkg: 'Demographic information: borrower response pending', sev: 'bad', issue: 'HMDA fields must be complete before reporting.' },
+    { id: 'pa6', field: 'Investor-required documents present', pkg: () => packageMissing().length ? `${packageMissing().length} missing` : 'All present', sev: () => packageMissing().length ? 'bad' : 'ok', issue: 'Missing documents block delivery.' },
+    { id: 'pa7', field: 'Fees and tolerance cures', pkg: 'No cure required', sev: 'ok' },
+  ].map(f => ({ ...f, pkg: typeof f.pkg === 'function' ? f.pkg() : f.pkg, sev: typeof f.sev === 'function' ? f.sev() : f.sev }));
+}
+function openAudit(which) {
+  const list = which === CLOSING_AUDIT ? closingFindings() : postFindings();
+  return list.filter(f => f.sev !== 'ok' && !state.auditRes[f.id] && !(f.id === 'pa6'));
+}
+const closingAuditPassed = () => state.ms >= 11 && openAudit(CLOSING_AUDIT).filter(f => f.sev === 'bad').length === 0;
+const postAuditPassed = () => state.ms >= 17 && openAudit(POST_AUDIT).filter(f => f.sev === 'bad').length === 0;
+const INVESTOR_DOCS = ['Note (original to custodian)', 'Deed of trust', 'Final Closing Disclosure', 'Final 1003 signed', 'Underwriting summary (1008)', 'AUS findings', 'Appraisal report', 'Credit report', 'Income and employment verification', 'Asset verification', 'Title policy', 'Homeowner’s insurance', 'Flood certification', 'Loan Estimate(s) and change of circumstance', 'Initial escrow account disclosure', 'Mortgage insurance certificate (if any)'];
+function packageMissing() { return INVESTOR_DOCS.filter(d => (d === 'Initial escrow account disclosure' && !state.auditRes.cx4) || (d === 'Title policy' && !state.trailing)); }
+const DELIVERY = {
+  'Fannie Mae': ['Loan data (ULDD, MISMO 3.4) to Fannie Mae Loan Delivery', 'Original note to the document custodian', 'Loan file images to the investor portal'],
+  'Freddie Mac': ['Loan data (ULDD, MISMO 3.4) to Freddie Mac Loan Selling Advisor', 'Original note to the document custodian', 'Loan file images to the investor portal'],
+};
+function auditRow(f, canAct) {
+  const res = state.auditRes[f.id];
+  const st = f.sev === 'ok' ? chip('ok', 'Pass') : res ? chip('neutral', res) : f.sev === 'bad' ? chip('bad', 'Issue') : chip('warn', 'Check');
+  const actions = f.sev !== 'ok' && !res && canAct ? `<div class="row" style="gap:6px;margin-top:6px"><button class="btn sm primary" data-act="auditFix" data-id="${f.id}">Corrected document received</button><button class="btn sm" data-act="auditCond" data-id="${f.id}">Request from closing agent</button>${f.sev === 'warn' ? `<button class="btn sm" data-act="auditAccept" data-id="${f.id}">Accept with note</button>` : ''}</div>` : '';
+  return `<tr class="${f.sev === 'bad' && !res ? 'flag-bad' : f.sev === 'warn' && !res ? 'flag' : ''}"><td><b>${f.field}</b>${f.issue && !res ? `<div class="note">${f.issue}</div>` : ''}${actions}</td>${f.kind === 'data' ? `<td>${f.file}</td><td>${f.pkg}<div class="note">${f.where}</div></td>` : `<td colspan="2">${f.pkg}</td>`}<td>${st}</td></tr>`;
+}
+function tabAudit2() {
+  const role = baseRole(roleNow()), canAct = ['Closer', 'Funder'].includes(role);
+  const all = closingFindings(), data = all.filter(f => f.kind === 'data'), docs = all.filter(f => f.kind === 'doc');
+  const open = openAudit(CLOSING_AUDIT), crit = open.filter(f => f.sev === 'bad').length;
+  if (state.ms < 11) return `<div class="stack">${screenHead('Before funding', 'Closing audit', '')}
+    <div class="card pad stack"><b>The closing audit runs when the signed closing package comes back.</b>
+    <p class="small muted" style="margin:0">Keystone reads every signed document and compares it with the loan file: names, address, loan amount, rate, payment, dates, fees and cash to close. It confirms every required disclosure is present, signed and dated. Funding stays locked until the audit passes.</p>
+    <div><button class="btn primary" data-act="demoDocsBack">Prototype: jump to docs back with a signed package</button></div></div></div>`;
+  return `<div class="stack">
+    ${screenHead('Before funding', 'Closing audit', 'Signed closing package compared with the loan file', crit ? chip('bad', `${crit} blocking issue${crit > 1 ? 's' : ''}`) : open.length ? chip('warn', `${open.length} to review`) : chip('ok', 'Passed'))}
+    <div class="banner ${crit ? 'warn' : ''}"><div><b>${crit ? 'Funding is locked until blocking issues are resolved' : 'Audit passed. The wire can be requested.'}</b><span class="small">${all.length} checks run on the signed package · ${all.filter(f => f.sev === 'ok').length} passed · ${open.length} open</span></div>${!crit && state.ms === 12 && canAct ? `<button class="btn sm primary" data-act="advance" style="margin-left:auto">Move to funding</button>` : ''}</div>
+    <div class="section-h"><h3>Loan data vs. signed documents</h3><button class="btn sm" data-act="split">View documents</button></div>
+    <div class="card tbl"><table><thead><tr><th>Field</th><th>Loan file</th><th>Signed package</th><th>Result</th></tr></thead><tbody>${data.map(f => auditRow(f, canAct)).join('')}</tbody></table></div>
+    <div class="section-h"><h3>Documents: present, signed and dated</h3><span class="small muted">Required set for a ${LOAN.purpose.toLowerCase()} · ${LOAN.loanType} · ${LOAN.investor}</span></div>
+    <div class="card tbl"><table><thead><tr><th>Document</th><th colspan="2">What the audit found</th><th>Result</th></tr></thead><tbody>${docs.map(f => auditRow(f, canAct)).join('')}</tbody></table></div>
+    ${!canAct ? '<div class="small muted">Closers and funders resolve audit findings.</div>' : ''}
+  </div>`;
+}
+function tabDelivery() {
+  const role = baseRole(roleNow()), canAct = ['Post-closer', 'Funder', 'Closer'].includes(role) || roleNow() === 'Closing manager';
+  if (state.ms < 17) return `<div class="stack">${screenHead('After funding', 'Post-close and investor delivery', '')}
+    <div class="card pad stack"><b>Post-close starts when the loan funds.</b>
+    <p class="small muted" style="margin:0">A second audit checks the funded loan, tracks trailing documents like the recorded deed of trust and final title policy, then builds the investor package from the eFolder and delivers it to the investor chosen on the loan.</p>
+    <div><button class="btn primary" data-act="demoFunded">Prototype: jump to funded</button></div></div></div>`;
+  const pf = postFindings(), open = openAudit(POST_AUDIT), crit = open.filter(f => f.sev === 'bad').length;
+  const miss = packageMissing(), inv = LOAN.investor, steps = DELIVERY[inv] || ['Loan data file (MISMO 3.4) and document images through the investor’s portal or secure file transfer'];
+  return `<div class="stack">
+    ${screenHead('After funding', 'Post-close and investor delivery', `Investor: ${inv}`, state.delivered ? chip('ok', 'Delivered') : crit ? chip('bad', 'Audit issues') : chip('warn', 'In progress'))}
+    <div class="section-h"><h3>Post-close audit</h3>${!state.trailing && canAct ? '<button class="btn sm" data-act="trailing">Prototype: trailing documents arrive</button>' : ''}</div>
+    <div class="card tbl"><table><thead><tr><th>Check</th><th colspan="2">Result detail</th><th>Result</th></tr></thead><tbody>${pf.map(f => auditRow({ ...f, kind: 'doc' }, canAct && f.id !== 'pa6' && f.id !== 'pa2' && f.id !== 'pa3')).join('')}</tbody></table></div>
+    <div class="grid-2">
+      <div class="card"><div class="an-head"><h3>Investor package</h3><span class="small muted">${INVESTOR_DOCS.length - miss.length} of ${INVESTOR_DOCS.length} documents</span></div>
+        <ul class="check-list">${INVESTOR_DOCS.map(d => { const m = miss.includes(d); return `<li><span class="mark ${m ? 'bad' : 'ok'}">${m ? '×' : '✓'}</span><span>${d}</span><span class="small muted">${m ? 'Missing' : 'From eFolder'}</span></li>`; }).join('')}
+          <li><span class="mark ok">✓</span><span>Loan data file (MISMO 3.4 / ULDD)</span><span class="small muted">Generated</span></li></ul></div>
+      <div class="card"><div class="an-head"><h3>Delivery</h3><span class="small muted">${inv}</span></div>
+        <div class="pad stack">
+          <ol class="list small" style="margin:0">${steps.map(x => `<li>${x}</li>`).join('')}</ol>
+          <div class="small muted">Borrower files are never sent by plain email. Delivery goes through the investor's system or a secure, encrypted transfer.</div>
+          <div class="row"><button class="btn" data-act="buildPkg" ${miss.length ? 'disabled title="Documents missing"' : ''}>Build package (ZIP)</button><button class="btn primary" data-act="deliver" ${miss.length || crit || state.delivered || state.ms !== 18 ? 'disabled' : ''}>${state.delivered ? 'Delivered' : 'Deliver to ' + inv}</button></div>
+          ${state.ms === 17 && !crit && canAct ? '<button class="btn sm" data-act="advance">Move to investor delivery</button>' : ''}
+          ${state.pkgBuilt ? `<div class="small"><b>Package built:</b> ${LOAN.id}_${inv.replace(/\s/g, '')}.zip · ${INVESTOR_DOCS.length} PDFs in investor stacking order + ${LOAN.id}_ULDD.xml</div>` : ''}
+        </div></div>
+    </div>
+  </div>`;
+}
+
+function milestoneActions() {
+  const role = roleNow();
+  if (state.ms === 5) {
+    if (baseRole(role) !== 'Underwriter') return `<span class="small muted">Waiting on underwriter decision.</span>`;
+    const blockFinal = openUW() > 0;
+    return `<button class="btn sm primary" data-act="decide" data-v="Conditionally approved">Conditionally approve</button>
+      <button class="btn sm" data-act="decide" data-v="Final approved" ${blockFinal ? 'disabled title="Prior-to-docs conditions are still open"' : ''}>Final approve</button>
+      <button class="btn sm danger" data-act="decide" data-v="Suspended">Suspend</button>`;
+  }
+  if (state.ms === 6) {
+    if (state.decision === 'Final approved') return `<button class="btn sm primary" data-act="advance">Send to closing</button>`;
+    return `<button class="btn sm primary" data-act="resubmit" ${['Processor', 'Loan officer'].includes(baseRole(role)) ? '' : 'disabled title="Processor or LO resubmits"'}>Resubmit to underwriting</button>`;
+  }
+  if (state.ms === 12 && !closingAuditPassed()) return `<span class="small muted">Funding opens when the closing audit passes.</span> <button class="btn sm" data-goto="caudit">Open closing audit</button>`;
+  if (state.ms === 17 && !postAuditPassed()) return `<span class="small muted">Delivery opens when the post-close audit passes.</span> <button class="btn sm" data-goto="delivery">Open post-close</button>`;
+  if (state.ms === 18 && !state.delivered) return `<button class="btn sm" data-goto="delivery">Package and deliver</button>`;
+  if (state.ms < MILESTONES.length - 1) return `<button class="btn sm primary" data-act="advance">Move to ${MILESTONES[state.ms + 1]}</button>`;
+  return '';
+}
+
+function tabOverview() {
+  const d = dti();
+  const left = statedLeft();
+  const drafts = draftConds();
+  const r = reserves();
+  return `<div class="stack">
+    ${drafts ? `<div class="banner warn"><div><b>${drafts} auto-generated conditions need underwriter review</b><span class="small">The rules engine wrote them when the loan entered underwriting. They stay hidden from the borrower portal until validated.</span></div><button class="btn sm" data-goto="conditions" style="margin-left:auto">Review</button></div>` : ''}
+    <div class="grid-4">
+      <div class="card pad kpi"><span class="k">Verified data</span><span class="v">${DATA.length - left} / ${DATA.length}</span><span class="small muted">${left} still stated</span></div>
+      <div class="card pad kpi"><span class="k">Back-end DTI</span><span class="v">${d.back.toFixed(1)}%</span><span class="small muted">Front-end ${d.front.toFixed(1)}%</span></div>
+      <div class="card pad kpi"><span class="k">Documents received digitally</span><span class="v">${DOCS.filter(x => !/Uploaded/.test(x.source) && x.status !== 'Not received').length} / ${DOCS.filter(x => x.status !== 'Not received').length}</span><span class="small muted">No borrower uploads needed</span></div>
+      <div class="card pad kpi"><span class="k">AUS · DU</span><span class="v" style="font-size:17px">Approve/Eligible</span><span class="small muted">Run 3 · Oct 12</span></div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="an-head"><h3>Four C’s at a glance</h3><span class="small muted">Open a screen for detail</span></div>
+        <ul class="check-list">
+          <li><span class="mark ok">✓</span><div><b>Character · Credit</b><div class="small muted">742 middle score. 2 rule-based payment adjustments. 1 debt missing from application.</div></div><button class="btn sm" data-goto="credit">Credit</button></li>
+          <li><span class="mark ok">✓</span><div><b>Capacity · Income and employment</b><div class="small muted">W-2 income verified digitally. Stated income 2.4% high.</div></div><button class="btn sm" data-goto="income">Income</button></li>
+          <li><span class="mark ${state.undisclosedConfirmed ? 'ok' : 'warn'}">${state.undisclosedConfirmed ? '✓' : '!'}</span><div><b>Capital · Assets</b><div class="small muted">${r.months.toFixed(1)} months reserves. Large deposit${state.undisclosedConfirmed ? '' : ' and a recurring payment that looks like a debt'}.</div></div><button class="btn sm" data-goto="assets">Assets</button></li>
+          <li><span class="mark ok">✓</span><div><b>Collateral · Property</b><div class="small muted">PUD verified at origination. Appraisal $655,000. Taxes differ from application.</div></div><button class="btn sm" data-goto="property">Property</button></li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="an-head"><h3>Key dates</h3><span class="small muted">From TRID calendar</span></div>
+        <ul class="timeline">
+          <li><span class="mono small">Sep 29</span><span>Application complete (6th TRID item received)</span></li>
+          <li><span class="mono small">Sep 30</span><span>Loan Estimate sent · e-consent on file</span></li>
+          <li><span class="mono small">Oct 1</span><span>Intent to proceed signed</span></li>
+          <li><span class="mono small">${fmtDate(cdDates().sendBy)}</span><span><b>Send Closing Disclosure by</b> (electronic delivery)</span></li>
+          <li><span class="mono small">${fmtDate(cdDates().receiveBy)}</span><span>Borrower must have received the CD</span></li>
+          <li><span class="mono small">${fmtDate(parseDate(state.closeDate))}</span><span>Closing · contract close of escrow</span></li>
+          <li><span class="mono small">${fmtDate(parseDate(LOAN.lockExp))}</span><span>Rate lock expires</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>`;
+}
+
+function finding(sev, text, act) {
+  const m = { ok: ['ok', 'Pass'], warn: ['warn', 'Review'], bad: ['bad', 'Issue'], info: ['info', 'Rule applied'] }[sev];
+  return `<li><span>${chip(m[0], m[1])}</span><div>${text}${act ? `<div class="act">${act}</div>` : ''}</div></li>`;
+}
+const screenHead = (c, title, sub, status) => `<div class="section-h"><div><div class="an-c">${c}</div><h2>${title}</h2></div><div class="row">${sub ? `<span class="small muted">${sub}</span>` : ''}${status || ''}</div></div>`;
+
+// ---------- 1003 loan application ----------
+const APP_PAGES = ['Borrower', 'Assets and liabilities', 'Real estate', 'Loan and property', 'Declarations', 'Demographics'];
+function badge(id) {
+  if (!id) return '';
+  if (id === 'flag') return chip('warn', 'Check');
+  if (id === 'missing') return chip('bad', 'Missing');
+  if (id === 'liab') return chip('warn', 'Doesn’t match credit');
+  const d = DATA.find(x => x.id === id); if (!d) return '';
+  return d.status === 'mismatch' ? chip('warn', 'Doesn’t match') : d.status === 'stated' ? chip('neutral', 'Stated') : chip('ok', 'Verified');
+}
+function appFields() {
+  const v = id => (DATA.find(x => x.id === id) || {}).stated;
+  return [
+    [ // 1 Borrower
+      ['Section 1a · Personal information'],
+      ['Name', 'Maya A. Okafor', 'ok-id'], ['Social Security number', '•••-••-4419'], ['Date of birth', '04/17/1990'], ['Citizenship', 'U.S. citizen'],
+      ['Marital status', 'Unmarried'], ['Dependents', '0'], ['Email', 'maya.okafor@example.com'], ['Cell phone', '(916) 555-0142'],
+      ['Current address', '2810 Laguna Blvd, Apt 214, Elk Grove, CA 95758'], ['Time at address', '3 years 2 months'], ['Housing', 'Rent · $2,950/mo'],
+      state.formerAdded ? ['Former address (last 2 years)', '220 W Pine St, Lodi, CA 95240 · rented 03/2023–08/2024', 'ok-id'] : ['Former address (last 2 years)', 'Missing', 'missing', 'Credit report shows 220 W Pine St, Lodi (2024)'],
+      ['Section 1b · Current employment'],
+      ['Employer', 'Kaiser Permanente', 'employ'], ['Position', 'Registered Nurse'], ['Start date', '08/2022', 'employ'], ['Base income (monthly)', v('income'), 'income'],
+    ],
+    [ // 2 Assets and liabilities
+      ['Section 2a · Assets'],
+      ['Golden 1 checking ••4471', v('bank'), 'bank'], ['Golden 1 savings ••8820', '$60,189.56', 'ok-id'], ['Fidelity 401(k), vested', '$38,950.00', 'ok-id'],
+      ['Section 2b · Other assets and credits'],
+      ['Gift (not deposited)', '$20,000.00 from mother', 'gift'], ['Seller credit', '$9,750.00'],
+      ['Section 2c · Liabilities'],
+      ...LIABS.filter(l => l.onApp).map(l => [`${l.name} · ${l.type.toLowerCase()}`, money(l.app) + '/mo', l.app === l.used ? 'ok-id' : 'liab', l.app === l.used ? '' : `Qualifying payment ${money(l.used)}/mo · ${l.rule}`]),
+    ],
+    [ // 3 Real estate
+      ['Section 3 · Real estate owned'],
+      ...(REO.length ? REO.map((r, i) => [`Property ${i + 1} · ${r.use}`, `${r.address} · ${money(r.value)}${r.rent ? ' · rent ' + money(r.rent) + '/mo' : ''}`, 'ok-id']) : [['Properties owned', 'Does not own real estate', 'ok-id', 'Address letter for 220 W Pine St, Lodi confirms no ownership']]),
+      ['Section 3 · What this means for the borrower profile'],
+      ['Investor experience (calculated)', investorExp().label, '', investorExp().why],
+    ],
+    [ // 4 Loan and property
+      ['Section 4a · Loan and property'],
+      ['Loan amount', money(LOAN.amount)], ['Loan purpose', 'Purchase'], ['Property address', LOAN.address], ['Number of units', '1'],
+      ['Property value', v('value'), 'value'], ['Occupancy', 'Primary residence', 'occ'], ['Property type', v('ptype'), 'ptype'],
+      ['Section 4c · Housing expense (proposed)'],
+      ['Property taxes', v('tax') + '/mo', 'tax'], ['Homeowner’s insurance', v('hoi') + '/mo', 'hoi'], ['HOA dues', '$85.00/mo', 'ok-id'],
+      ['Section 4d · Gifts or grants'],
+      ['Gift', '$20,000 · cash · mother · not yet deposited', 'gift'],
+    ],
+    [ // 5 Declarations
+      ['Section 5a · About this property and your money'],
+      ['A. Will you occupy the property as your primary residence?', LOAN.occupancy === 'Primary residence' ? 'Yes' : 'No', 'occ'],
+      ['A1. Ownership interest in another property in the last 3 years?', REO.length ? 'Yes' : 'No', '', REO.length ? 'Owns property: not a first-time homebuyer' : 'Supports first-time homebuyer'],
+      ['B. Family or business relationship with the seller?', 'No'],
+      ['C. Borrowing any money for this transaction not disclosed?', 'No'],
+      ['D. Applying for other new credit or mortgage?', 'No', 'flag', '2 inquiries in last 90 days; inquiry letter generated'],
+      ['E. Subject to a lien with priority over this mortgage?', 'No'],
+      ['Section 5b · About your finances'],
+      ['F. Co-signer or guarantor on any undisclosed debt?', 'No', state.undisclosedConfirmed ? '' : 'flag', state.undisclosedConfirmed ? '' : 'Bank statements show $412/mo to Westlake Financial'],
+      ['G. Outstanding judgments?', 'No'], ['H. Delinquent on federal debt?', 'No'], ['I. Party to a lawsuit?', 'No'],
+      ['J. Deed in lieu in the last 7 years?', 'No'], ['K. Pre-foreclosure or short sale in the last 7 years?', 'No'],
+      ['L. Foreclosure in the last 7 years?', 'No'], ['M. Bankruptcy in the last 7 years?', 'No'],
+    ],
+    [ // 6 Demographics
+      ['Section 8 · Demographic information (HMDA)'],
+      ['Ethnicity', 'Response pending', 'flag', 'Required for HMDA; borrower may decline'], ['Race', 'Response pending', 'flag'], ['Sex', 'Response pending', 'flag'],
+      ['Collected by', 'Online application'],
+    ],
+  ];
+}
+function tabApp() {
+  const pages = appFields(), pg = state.appPage || 0;
+  const flagged = pages.map(p => p.filter(f => f[2] && f[2] !== 'ok-id' && (f[2] === 'flag' || (DATA.find(x => x.id === f[2]) || {}).status !== 'verified')).length);
+  return `<div class="stack">
+    ${screenHead('Uniform Residential Loan Application', 'Loan application (1003)', 'Edits are saved to the file and logged in the audit trail')}
+    <div class="pager" role="tablist" aria-label="Application pages">${APP_PAGES.map((p, i) => `<button data-act="apppage" data-v="${i}" aria-selected="${pg === i}"><span class="num">${i + 1}</span> ${p}${flagged[i] ? ` <span class="count alert">${flagged[i]}</span>` : ''}</button>`).join('')}</div>
+    <div class="card pad">
+      <div class="form-grid">${pages[pg].map((f, i) => f.length === 1 ? `<div class="form-sec">${f[0]}</div>` : `
+        <div class="ff">
+          <label for="f-${pg}-${i}">${f[0]}</label>
+          <div class="ff-row"><input id="f-${pg}-${i}" data-field="${f[0]}" value="${(f[1] || '').replace(/"/g, '&quot;')}">${f[2] === 'ok-id' ? chip('ok', 'Verified') : badge(f[2])}</div>
+          ${f[3] ? `<div class="note">${f[3]}</div>` : ''}
+        </div>`).join('')}</div>
+    </div>
+    ${pg === 2 ? `<div class="row"><button class="btn sm" data-act="addReo" ${REO.length >= SAMPLE_REO.length ? 'disabled' : ''}>Add a sample property</button><button class="btn sm" data-act="removeReo" ${REO.length ? '' : 'disabled'}>Remove last property</button><span class="small muted">Try it: investor experience recalculates as properties are added.</span></div>` : ''}
+    <div class="row spread">
+      <button class="btn" data-act="apppage" data-v="${Math.max(0, pg - 1)}" ${pg === 0 ? 'disabled' : ''}>← Previous page</button>
+      <span class="small muted">Page ${pg + 1} of ${APP_PAGES.length}</span>
+      <button class="btn primary" data-act="apppage" data-v="${Math.min(APP_PAGES.length - 1, pg + 1)}" ${pg === APP_PAGES.length - 1 ? 'disabled' : ''}>Next page →</button>
+    </div>
+  </div>`;
+}
+
+// ---------- Four C's screens ----------
+function tabCredit() {
+  const d = dti();
+
+  return `<div class="stack">
+    ${screenHead('Character', 'Credit analysis', 'Rules set: Fannie Mae conventional', chip('warn', 'Review'))}
+    <div class="grid-4">
+      <div class="card pad kpi"><span class="k">Scores (EQ / EX / TU)</span><span class="v">738 / 742 / 751</span><span class="small muted">Middle score 742</span></div>
+      <div class="card pad kpi"><span class="k">Monthly debts used</span><span class="v">${money(d.other)}</span></div>
+      <div class="card pad kpi"><span class="k">Inquiries, 90 days</span><span class="v">2</span><span class="small muted">Letter generated</span></div>
+      <div class="card pad kpi"><span class="k">Report date</span><span class="v">Sep 29</span><span class="small muted">Expires Jan 27</span></div>
+    </div>
+    <div class="section-h"><h3>Liabilities: credit report vs. application</h3><button class="btn sm" data-doc="credit">View credit report</button></div>
+    <div class="card tbl"><table><thead><tr><th>Creditor</th><th>Type</th><th class="r">Balance</th><th class="r">On application</th><th class="r">On credit</th><th class="r">Used to qualify</th><th>Status</th><th>Rule</th></tr></thead>
+    <tbody>${LIABS.map(l => { const ok = l.onApp && l.app === l.used; return `<tr class="${ok ? '' : 'flag'}"><td><b>${l.name}</b></td><td class="small">${l.type}</td><td class="r num">${money(l.bal)}</td><td class="r num">${l.onApp ? money(l.app) : '—'}</td><td class="r num">${l.credit === null ? 'Not reported' : l.src === 'bank' ? 'Not on credit' : money(l.credit)}</td><td class="r num">${money(l.used)}</td><td>${!l.onApp ? chip('bad', 'Missing from 1003') : ok ? chip('ok', 'Verified') : chip('warn', 'Doesn’t match')}</td><td class="small muted">${l.rule}</td></tr>`; }).join('')}</tbody></table></div>
+    <div class="card"><div class="an-head"><h3>Findings</h3></div><ul class="findings">
+      ${finding('info', 'Nelnet student loan: $0 payment reported. Fannie rule applied: 1% of balance = <b class="num">$382/mo</b>.')}
+      ${finding('info', 'Capital One: no payment reported. Used 5% of balance = <b class="num">$107/mo</b>.')}
+      ${finding('warn', 'Affirm installment is on credit but not on the application. Add it; payment may be excluded with 8 payments left.', '<button class="btn sm" data-act="alerts">Open alerts</button>')}
+      ${finding('warn', '2 inquiries in the last 90 days. Inquiry letter generated for e-signature.', '<button class="btn sm" data-goto="conditions">See condition</button>')}
+      ${finding('warn', 'Address on credit not on application: 220 W Pine St, Lodi (2024). Address letter generated.')}
+    </ul></div>
+  </div>`;
+}
+
+function tabIncome() {
+  const d = dti();
+  return `<div class="stack">
+    ${screenHead('Capacity', 'Income and employment analysis', 'Verified digitally: payroll connection and IRS transcripts', chip('ok', 'Supported'))}
+    <div class="grid-4">
+      <div class="card pad kpi"><span class="k">Qualifying income</span><span class="v">${money(LOAN.income, 2)}</span><span class="small muted">per month</span></div>
+      <div class="card pad kpi"><span class="k">Front-end DTI</span><span class="v">${d.front.toFixed(1)}%</span></div>
+      <div class="card pad kpi"><span class="k">Back-end DTI</span><span class="v">${d.back.toFixed(1)}%</span><span class="small muted">DU approved at 45.7%</span></div>
+      <div class="card pad kpi"><span class="k">Time with employer</span><span class="v">4 yrs 2 mos</span></div>
+    </div>
+    <div class="section-h"><h3>Employment</h3><button class="btn sm" data-doc="paystub">View pay stub</button></div>
+    ${table(['Employer', 'Position', 'Start', 'Type', 'Verified by'], [['<b>Kaiser Permanente</b>', 'Registered Nurse', 'Aug 2022', 'Salaried, W-2', 'Payroll connection · Sep 29']])}
+    <div class="section-h"><h3>Income calculation</h3><span class="small muted">Base pay only. No overtime or bonus used.</span></div>
+    ${table(['Source', 'Annual', 'Monthly'], [['2024 W-2 (IRS transcript)', '$128,400.00', '$10,700.00'], ['2025 W-2 (IRS transcript)', '$131,200.00', '$10,933.33'], ['2026 base, annualized from pay stub', '$131,800.00', '$10,983.33'], ['<b>Qualifying income used</b>', '<b>$131,800.00</b>', '<b>$10,983.33</b>']], true)}
+    <div class="card"><div class="an-head"><h3>Findings</h3></div><ul class="findings">
+      ${finding('ok', 'Salaried, same employer 4+ years, no gaps in 24 months.')}
+      ${finding('ok', 'Pay trend is stable and rising. Current base supported by both W-2 years.')}
+      ${finding('warn', 'Application states $11,250/mo. Verified $10,983.33/mo (2.4% lower).', '<button class="btn sm" data-act="alerts">Update application</button>')}
+      ${finding('info', 'Verbal VOE required within 10 business days of the note date. Scheduled automatically at Final approved.')}
+    </ul></div>
+  </div>`;
+}
+
+function tabAssets() {
+  const d = dti(), r = reserves();
+  return `<div class="stack">
+    ${screenHead('Capital', 'Asset analysis', 'Bank data from Plaid · 2 months', chip(state.undisclosedConfirmed ? 'warn' : 'bad', state.undisclosedConfirmed ? 'Review' : 'Issue'))}
+    <div class="grid-4">
+      <div class="card pad kpi"><span class="k">Verified assets</span><span class="v">$171,450</span><span class="small muted">Including $20,000 gift</span></div>
+      <div class="card pad kpi"><span class="k">Funds to close</span><span class="v">$147,860</span></div>
+      <div class="card pad kpi"><span class="k">Reserves</span><span class="v">${r.months.toFixed(1)} mo</span><span class="small muted">${money(r.amt)} after closing</span></div>
+      <div class="card pad kpi"><span class="k">Seller credit</span><span class="v">1.5%</span><span class="small muted">Limit 6% at 80% LTV</span></div>
+    </div>
+    <div class="section-h"><h3>Accounts</h3><button class="btn sm" data-doc="bank-sep">View bank statement</button></div>
+    ${table(['Account', 'Application', 'Verified', 'Source'], [['Golden 1 checking ••4471', (DATA.find(x => x.id === 'bank') || {}).stated, '$52,310.44', 'Plaid'], ['Golden 1 savings ••8820', '$60,189.56', '$60,189.56', 'Plaid'], ['Fidelity 401(k), vested', '$38,950.00', '$38,950.00', 'Plaid'], ['Gift from mother', '$20,000.00', 'Pending donor signature', 'Gift letter']], false)}
+    <div class="section-h"><h3>Funds to close</h3></div>
+    ${table(['Item', 'Amount'], [['Down payment (20%)', '$130,000.00'], ['Closing costs, prepaids, escrow', '$27,610.00'], ['Seller credit', '−$9,750.00'], ['<b>Total funds to close</b>', '<b>$147,860.00</b>']], true)}
+    <div class="card"><div class="an-head"><h3>Findings</h3></div><ul class="findings">
+      ${finding('ok', 'Funds to close covered. Gift counted once the donor signs.')}
+      ${finding('warn', 'Large deposit: $6,500 on Sep 3 is more than 50% of monthly income. Needs explanation and source.', '<button class="btn sm" data-doc="bank-sep">See deposit</button>')}
+      ${finding(state.undisclosedConfirmed ? 'ok' : 'bad', state.undisclosedConfirmed
+        ? 'Westlake Financial $412/mo added to liabilities. Rerun DU.'
+        : `Recurring <b class="num">$412/mo</b> payment to Westlake Financial (auto lender) appears 3 months in a row. Not on application or credit report. If it is a debt, DTI rises to <b class="num">${d.ifAdded.toFixed(1)}%</b>.`,
+        state.undisclosedConfirmed ? '' : '<button class="btn sm" data-act="confirmDebt">Add as liability</button>')}
+    </ul></div>
+  </div>`;
+}
+
+function tabProperty() {
+  return `<div class="stack">
+    ${screenHead('Collateral', 'Property analysis', 'Records, AVM and appraisal', chip('ok', 'Appraisal received'))}
+    <div class="card">
+      <div class="cmp">
+        <div><div class="small muted">Application</div><div class="num">$650,000</div><div class="small muted">Purchase price</div></div>
+        <div><div class="small muted">AVM · Clear Capital</div><div class="num">$662,000</div><div class="small muted">91% confidence</div></div>
+        <div><div class="small muted">Appraisal</div><div class="num">$655,000</div><div class="small muted">Oct 9 · supports price</div></div>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="stack"><div class="section-h"><h3>Property details</h3><button class="btn sm" data-doc="title">View title report</button></div>
+      ${table(['Item', 'Value'], [['Property type', 'PUD (verified from records)'], ['Year built', '2004'], ['Living area', '1,862 sq ft'], ['Site', '0.14 acres'], ['HOA', 'Rancho Larkspur HOA · $85/mo'], ['Property taxes', '$8,112/yr ($676/mo)'], ['Flood zone', 'X (not required)']])}</div>
+      <div class="card"><div class="an-head"><h3>Appraisal review</h3><button class="btn sm" data-doc="appraisal">View appraisal</button></div>
+        <ul class="check-list">
+          <li><span class="mark ok">✓</span><span>Highest and best use is the present use</span><span class="small muted">Yes</span></li>
+          <li><span class="mark ok">✓</span><span>Location</span><span class="small muted">Suburban, not rural</span></li>
+          <li><span class="mark ok">✓</span><span>Site size</span><span class="small muted num">0.14 acres</span></li>
+          <li><span class="mark ok">✓</span><span>Condition and quality ratings</span><span class="small muted num">C3 · Q4</span></li>
+          <li><span class="mark ok">✓</span><span>Comparable sales within 1 mile, last 6 months</span><span class="small muted">3 of 3</span></li>
+          <li><span class="mark pend">·</span><span>Collateral Underwriter risk score</span><span class="small muted">Waiting on UCDP</span></li>
+        </ul></div>
+    </div>
+    <div class="card"><div class="an-head"><h3>Findings</h3></div><ul class="findings">
+      ${finding('ok', 'Property type verified as PUD at origination (records showed HOA). Priced correctly from the start.')}
+      ${finding('warn', 'Property taxes: public records $676/mo, application $650/mo.', '<button class="btn sm" data-act="alerts">Update application</button>')}
+      ${finding('ok', 'Homeowner’s insurance quote $142/mo. HOA dues $85/mo confirmed on records.')}
+    </ul></div>
+  </div>`;
+}
+
+// ---------- role workflow screens ----------
+function tabRole(role) {
+  const me = roleNow(), canAct = baseRole(me) === role && !me.includes('manager');
+  const { done, total } = wfStatus(role);
+  const d = dti(), pd = perDiem(), c = cdDates();
+  const owner = PEOPLE[role];
+  const extras = {
+    'Loan officer': () => `<div class="card"><div class="an-head"><h3>Borrower profile</h3><span class="small muted">${canAct ? 'You can update these' : 'Loan officer updates these'}</span></div>
+      <div class="pad form-grid">
+        <div class="ff"><label for="bp-fthb">First-time homebuyer</label>
+          ${canAct ? `<div class="ff-row"><select id="bp-fthb" data-bp="fthb"><option ${LOAN.fthb === 'Yes' ? 'selected' : ''}>Yes</option><option ${LOAN.fthb === 'No' ? 'selected' : ''}>No</option><option ${LOAN.fthb === 'Unknown' ? 'selected' : ''}>Unknown</option></select></div>` : `<b>${LOAN.fthb}</b>`}
+          <div class="note">Source: ${LOAN.fthbSource}. Not on the 1003; captured in our POS or entered here when the loan is added by hand.</div></div>
+        <div class="ff"><label>Investor experience</label><b>${investorExp().label}</b>
+          <div class="note">${investorExp().why}. Calculated from the REO section and occupancy, not entered by hand.</div></div>
+      </div>
+      <div class="pad" style="padding-top:0"><div class="small muted">Rules: 0 investment properties and buying an investment = first-time investor · 1 investment property = novice investor · 2 or more = experienced investor.</div>
+      <button class="btn sm" data-goto="app" data-page="2" style="margin-top:8px">Open REO section (1003 page 3)</button></div></div>
+    <div class="grid-2">
+      ${panel('Loan terms and pricing', 'Priced on verified property type', `${table(['Item', 'Value'], [['Program', LOAN.loanType + ' · ' + LOAN.investor], ['Rate', LOAN.rate.toFixed(3) + '%'], ['Points', '0.18'], ['Principal and interest', money(pAndI, 2) + '/mo'], ['Lock', 'Locked to ' + fmtDate(parseDate(LOAN.lockExp))]])}${canAct ? '<button class="btn" data-act="reprice">Re-run pricing with verified data</button>' : ''}`)}
+      ${panel('Application completeness (TRID)', 'All 6 items received Sep 29', `<ul class="check-list">${['Name', 'Income', 'Social Security number (credit)', 'Property address', 'Estimated property value', 'Loan amount'].map(x => `<li><span class="mark ok">✓</span><span>${x}</span><span></span></li>`).join('')}</ul>`)}
+    </div>`,
+    Processor: () => `<div class="grid-2">
+      ${panel('Conditions assigned to processor', '', `<ul class="check-list">${CONDS.filter(x => x.assigned === 'Processor' || (x.assigned === 'Borrower' && x.signoff === 'Processor')).map(x => `<li><span class="mark ${DONE_ST.includes(x.status) ? 'ok' : 'warn'}">${DONE_ST.includes(x.status) ? '✓' : '!'}</span><span>${x.title}</span><span class="chip ${COND_ST[x.status][0]}">${x.status}</span></li>`).join('')}</ul>`)}
+      ${panel('Orders outstanding', '', `<ul class="check-list">${ORDERS.filter(o => o[3] !== 'Received').map(o => `<li><span class="mark pend">·</span><span>${o[0]}</span><span class="small muted">${o[4]}</span></li>`).join('')}</ul>`)}
+    </div>`,
+    Underwriter: () => `<div class="card"><div class="an-head"><h3>1008 summary and recommendation</h3>${chip('warn', 'Conditionally eligible')}</div>
+      <div class="pad stack"><p style="margin:0;max-width:72ch">Borrower has stable salaried income, verified digitally, with a 742 middle score and ${reserves().months.toFixed(1)} months of reserves. The loan is eligible as structured, subject to explaining the $6,500 deposit${state.undisclosedConfirmed ? ' and rerunning DU with the Westlake Financial payment added' : ' and resolving the $412 monthly payment to Westlake Financial, which may be an undisclosed auto loan'}. ${state.undisclosedConfirmed ? `DTI is now ${d.back.toFixed(1)}%.` : `If confirmed, DTI rises to ${d.ifAdded.toFixed(1)}%.`}</p>
+      <div class="small muted">Compensating factors: 4+ years same employer · 742 credit score · ${reserves().months.toFixed(1)} months reserves · minimal payment shock (current rent $2,950).</div>
+      ${state.ms === 5 && canAct ? `<div class="row">${milestoneActions()}</div>` : ''}</div></div>`,
+    Closer: () => `<div class="grid-2">
+      ${panel('Closing dates', '', `${table(['Item', 'Date'], [['Closing', fmtDate(c.close)], ['Send CD by (electronic)', fmtDate(c.sendBy)], ['Borrower must receive CD by', fmtDate(c.receiveBy)], ['Lock expires', fmtDate(parseDate(LOAN.lockExp))]])}<button class="btn sm" data-goto="fees">Change closing date</button>`)}
+      ${panel('Fee reconciliation', '', `<div>${feeMismatches() ? `<b>${feeMismatches()}</b> line(s) on the closing agent’s statement differ from our system.` : 'Closing agent’s statement matches our system.'}</div><div class="small muted">Prepaid interest ${money(pd.amount, 2)} (${pd.days} days).</div><button class="btn sm" data-goto="fees">Open fees</button>`)}
+    </div>`,
+    'Disclosure desk': () => `<div class="grid-2">
+      ${panel('Initial disclosure package', 'Sent Sep 30 · e-signed Oct 1', `<ul class="check-list">${['Loan Estimate', 'Written list of service providers', 'Appraisal and valuation notice (ECOA)', 'Home loan toolkit (purchase)', 'Affiliated business disclosure', 'Servicing disclosure', 'Privacy notice', 'Intent to proceed form', 'E-consent', 'California state disclosures'].map(x => `<li><span class="mark ok">✓</span><span>${x}</span><span></span></li>`).join('')}</ul>`)}
+      ${panel('Pricing sheet vs. loan application', 'Checked before sending', table(['Field', 'Pricing sheet', 'Application'], [['Loan amount', money(LOAN.amount), money(LOAN.amount)], ['Rate and points', LOAN.rate.toFixed(3) + '% · 0.18', LOAN.rate.toFixed(3) + '% · 0.18'], ['Program', LOAN.loanType + ' · ' + LOAN.investor, LOAN.loanType + ' · ' + LOAN.investor], ['Property type', 'PUD', LOAN.propertyType], ['LTV', '80.0%', '80.0%'], ['Occupancy', 'Primary', LOAN.occupancy.replace(' residence', '')]]))}
+    </div>
+    ${panel('Re-disclosure watch', 'Changes that require a revised Loan Estimate or restart a waiting period', `<div class="small">No changed circumstances since the Loan Estimate. Closing Disclosure: send by <b>${fmtDate(cdDates().sendBy)}</b>, received by <b>${fmtDate(cdDates().receiveBy)}</b>.</div>`)}`,
+    'Lock desk': () => { const ext = state.lockLog.filter(x => x.type === 'ext').length; const best = [['Wells Fargo (correspondent)', 101.42], ['Fannie Mae cash window', 101.25], ['Chase (correspondent)', 101.31], ['Freddie Mac cash window', 101.12]]; return `<div class="grid-2">
+      ${panel('Lock', parseDate(state.closeDate) > parseDate(LOAN.lockExp) ? chip('bad', 'Expires before closing') : chip('ok', 'Covers closing'), `${table(['Item', 'Value'], [['Locked', 'Sep 29, 2026'], ['Expires', fmtDate(parseDate(LOAN.lockExp))], ['Rate', LOAN.rate.toFixed(3) + '%'], ['Base price', '100.680'], ['Adjustments (credit score / LTV, PUD)', '−0.500'], ['Extension costs', ext ? '−' + (0.125 * ext).toFixed(3) : '0.000'], ['Net price', (100.180 - 0.125 * ext).toFixed(3)]])}${canAct ? '<div class="row"><button class="btn sm" data-act="lockExtend">Extend 7 days (−0.125)</button></div>' : ''}`)}
+      ${panel('Best execution', 'Price for this loan by investor', `${table(['Investor', 'Price', ''], best.map(b => [b[0], b[1].toFixed(3), b[0].startsWith(LOAN.investor) ? chip('ok', 'Selected') : canAct ? `<button class="btn sm" data-act="pickInvestor" data-v="${b[0].replace(/ \(.*/, '').replace(' cash window', '')}">Select</button>` : '']))}<div class="small muted">Committing to the best price adds to gain on sale; the investor drives delivery requirements.</div>`)}
+    </div>
+    ${panel('Purchase and settlement', state.purchased ? chip('ok', 'Purchased') : 'After delivery', state.purchased ? table(['Item', 'Amount'], [['Expected proceeds', money(LOAN.amount * 1.0118, 2)], ['Purchase advice', money(LOAN.amount * 1.0118, 2)], ['Difference', '$0.00'], ['Warehouse line payoff', money(LOAN.amount, 2)]], true) : `<div class="small">When the investor buys the loan, the purchase advice is reconciled with the expected price and the warehouse line is paid off.</div>${state.delivered && canAct ? '<div><button class="btn sm primary" data-act="purchased">Purchase advice received</button></div>' : ''}`)}`; },
+    'Post-closer': () => `<div class="card pad stack"><b>Post-close: audit, trailing documents, investor delivery</b><div class="small muted">Investor: ${LOAN.investor}. Package and delivery live on the Post-close and delivery screen.</div><div><button class="btn sm" data-goto="delivery">Open post-close and delivery</button></div></div>`,
+    Funder: () => `<div class="grid-2">
+      ${panel('Wire calculation', 'Estimate; final after docs back', table(['Item', 'Amount'], [['Loan amount', money(LOAN.amount, 2)], ['Lender fees withheld (underwriting, processing)', '−$1,890.00'], ['<b>Net wire to closing agent</b>', '<b>' + money(LOAN.amount - 1890, 2) + '</b>']], true))}
+      ${panel('Prior-to-funding conditions', '', `<ul class="check-list">${CONDS.filter(x => x.timing === 'Prior to funding').map(x => `<li><span class="mark ${DONE_ST.includes(x.status) ? 'ok' : 'warn'}">${DONE_ST.includes(x.status) ? '✓' : '!'}</span><span>${x.title}</span><span class="chip ${COND_ST[x.status][0]}">${x.status}</span></li>`).join('')}</ul><div class="small muted">Wire request opens at the In funding milestone.</div>`)}
+    </div>`,
+  };
+  return `<div class="stack">
+    <div class="section-h"><div><div class="an-c">${canAct ? 'Your workflow' : me.includes('manager') && baseRole(me) === role ? 'Your team’s workflow' : 'Read only'}</div><h2>${role} workflow</h2></div>
+      <span class="small muted">Assigned: <b>${owner}</b> · ${done} of ${total} steps done</span></div>
+    ${!canAct ? `<div class="banner"><div><b>Viewing the ${role.toLowerCase()}’s steps</b><span class="small">Only ${owner} (${role.toLowerCase()}) can mark these steps done. Everyone on the file can see where they stand.</span></div></div>` : ''}
+    <div class="card">${stepList(role, canAct)}</div>
+    ${extras[role]()}
+  </div>`;
+}
+
+const COND_ST = {
+  Added: ['plain', 'New condition on the file. Underwriter validates before it goes out.'],
+  Open: ['warn', 'Waiting on the assigned person or document.'],
+  Satisfied: ['info', 'Document or answer received. Waiting for sign-off.'],
+  Cleared: ['ok', 'Signed off by the authorized role.'],
+  Waived: ['neutral', 'Not required. Waived by the underwriter, with a reason.'],
+};
+const WAIVE_REASONS = ['Not required by AUS findings', 'Covered by another document', 'Compensating factors documented'];
+function canSatisfy(c, role) { return role === c.assigned || (c.assigned === 'Borrower' && (role === 'Processor' || role === 'Loan officer')) || role === c.signoff; }
+function condAction(c, role) {
+  if (state.waiving === c.id) return `<div class="row" style="gap:6px"><select id="waive-${c.id}" aria-label="Waive reason">${WAIVE_REASONS.map(r => `<option>${r}</option>`).join('')}</select><button class="btn sm primary" data-act="waive" data-id="${c.id}">Waive</button><button class="btn sm" data-act="waiveCancel">Cancel</button></div>`;
+  const waive = role === 'Underwriter' && !DONE_ST.includes(c.status) ? `<button class="btn sm" data-act="waiveStart" data-id="${c.id}">Waive</button>` : '';
+  if (c.status === 'Added') return role === 'Underwriter' ? `<span class="row" style="gap:6px"><button class="btn sm" data-act="release" data-id="${c.id}">Validate</button>${waive}</span>` : '<span class="small muted">Awaiting underwriter</span>';
+  if (c.status === 'Open') return `<span class="row" style="gap:6px"><button class="btn sm" data-act="satisfy" data-id="${c.id}" ${canSatisfy(c, role) ? '' : `disabled title="Assigned to ${c.assigned}"`}>Mark satisfied</button>${waive}</span>`;
+  if (c.status === 'Satisfied') return `<span class="row" style="gap:6px"><button class="btn sm primary" data-act="clear" data-id="${c.id}" ${role === c.signoff ? '' : `disabled title="Sign-off belongs to ${c.signoff}"`}>Clear</button>${waive}</span>`;
+  return c.by ? `<span class="small muted">${/^(Cleared|Waived)/.test(c.by) ? c.by : 'Cleared via ' + c.by}</span>` : '';
+}
+function tabConditions() {
+  const role = roleNow();
+  const list = CONDS.filter(c => c.list === state.condTab);
+  const roles = ['Loan officer', 'Processor', 'Underwriter', 'Closer', 'Funder', 'QA'];
+  const counts = Object.keys(COND_ST).map(k => [k, list.filter(c => c.status === k).length]);
+  return `<div class="stack">
+    <div class="section-h">
+      <div class="subtabs" role="group" aria-label="Condition list">
+        <button data-act="condtab" data-v="pre" aria-pressed="${state.condTab === 'pre'}">Preliminary (${CONDS.filter(c => c.list === 'pre').length})</button>
+        <button data-act="condtab" data-v="uw" aria-pressed="${state.condTab === 'uw'}">Underwriting (${CONDS.filter(c => c.list === 'uw').length})</button>
+      </div>
+      <span class="small muted">Viewing as <b>${role}</b>. Only the sign-off role can clear. Only the underwriter can waive.</span>
+    </div>
+    <div class="row" style="gap:8px">${counts.map(([k, n]) => `<span class="chip ${COND_ST[k][0]}" title="${COND_ST[k][1]}">${k} · ${n}</span>`).join('')}<span class="small muted">Added → Open → Satisfied → Cleared, or Waived</span></div>
+    ${state.condTab === 'uw' && draftConds() ? `<div class="banner"><div><b>${draftConds()} new conditions are not visible to the borrower yet</b><span class="small">Validate each one to open it and release it to the borrower portal and the assigned person.</span></div>${role === 'Underwriter' ? `<button class="btn sm primary" data-act="releaseAll" style="margin-left:auto">Validate all ${draftConds()}</button>` : ''}</div>` : ''}
+    <div class="card tbl"><table>
+      <thead><tr><th>Condition</th><th>Timing</th><th>Assigned to</th><th>Sign-off by</th><th>Status</th><th></th></tr></thead>
+      <tbody>${list.map(c => `<tr class="${c.status === 'Added' ? 'flag' : ''}">
+        <td><b>${c.title}</b><div class="note">${c.source}${c.generated ? ' · document generated for e-sign' : ''}${c.note ? ' · ' + c.note : ''}${c.waivedReason ? ' · waived: ' + c.waivedReason : ''}${c.list === 'uw' ? (c.released ? ' · in portal' : ' · hidden from portal') : ''}</div></td>
+        <td class="small">${c.timing}</td>
+        <td class="small">${c.assigned}</td>
+        <td>${role === 'Underwriter' && c.list === 'uw' && !DONE_ST.includes(c.status)
+          ? `<select data-act="signoff" data-id="${c.id}" aria-label="Sign-off role for ${c.id}">${roles.map(r => `<option ${r === c.signoff ? 'selected' : ''}>${r}</option>`).join('')}</select>`
+          : `<span class="small">${c.signoff}</span>`}</td>
+        <td><span class="chip ${COND_ST[c.status][0]}" title="${COND_ST[c.status][1]}">${c.status}</span></td>
+        <td>${condAction(c, role)}</td>
+      </tr>`).join('')}</tbody>
+    </table></div>
+  </div>`;
+}
+
+function tabOrders() {
+  return `<div class="stack">
+    <div class="section-h"><h2>Third-party orders</h2><span class="small muted">Placed automatically when a milestone or data point triggers them.</span></div>
+    <div class="card tbl"><table>
+      <thead><tr><th>Order</th><th>Vendor</th><th>Trigger</th><th>Status</th><th>Date</th></tr></thead>
+      <tbody>${ORDERS.map(o => `<tr><td><b>${o[0]}</b></td><td class="small">${o[1]}</td><td class="small muted">${o[2]}</td><td>${chip(o[3] === 'Received' ? 'ok' : o[3] === 'Ordered' ? 'info' : 'neutral', o[3])}</td><td class="small mono">${o[4]}</td></tr>`).join('')}</tbody>
+    </table></div>
+  </div>`;
+}
+
+function tabFees() {
+  const pd = perDiem(), t = tenPct(), c = cdDates();
+  const lockExp = parseDate(LOAN.lockExp), close = parseDate(state.closeDate);
+  const mism = FEES.filter(f => f.name && feeAgent(f) !== feeCur(f));
+  return `<div class="stack">
+    <div class="grid-2">
+      <div class="card pad stack">
+        <div class="section-h"><h3>Closing date watch</h3>${state.closeDate !== '2026-11-13' ? chip('warn', 'Date changed') : chip('ok', 'Matches CD draft')}</div>
+        <div class="row"><label class="label" for="closeDate">Closing date</label><input type="date" id="closeDate" value="${state.closeDate}" min="2026-10-15" max="2027-01-31"></div>
+        <div class="small">Per-diem interest <span class="num">${money(pd.daily, 2)}</span> × ${pd.days} days = <b class="num">${money(pd.amount, 2)}</b>. First payment <b>${pd.firstPay.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</b>.</div>
+        <div class="small">Send the CD by <b>${fmtDate(c.sendBy)}</b> so the borrower receives it by <b>${fmtDate(c.receiveBy)}</b>. Sundays and federal holidays don’t count.</div>
+        ${close > lockExp ? `<div class="banner warn"><div><b>Closing is after the lock expires</b><span class="small">Lock ends ${fmtDate(lockExp)}. Extend the lock or pick an earlier date.</span></div></div>` : ''}
+        ${state.closeDate !== '2026-11-13' ? `<div class="small muted">Regenerate: Closing Disclosure, prepaid interest, first payment letter, escrow setup.</div>` : ''}
+      </div>
+      <div class="card pad stack">
+        <div class="section-h"><h3>Tolerance check</h3>${t.agent > t.limit ? chip('bad', 'Over 10%') : chip('ok', 'Within limits')}</div>
+        <div class="small">10% bucket: <b class="num">${money(t.agent, 2)}</b> against a limit of <b class="num">${money(t.limit, 2)}</b> (Loan Estimate ${money(t.le, 2)}).</div>
+        <div class="small">Zero-tolerance fees: ${zeroViolations().length ? `<b style="color:var(--bad)">${zeroViolations().length} increased</b>` : 'none increased'}.</div>
+        <div class="small muted">${mism.length ? `${mism.length} line${mism.length > 1 ? 's' : ''} on the closing agent’s statement differ from our system.` : 'Closing agent’s statement matches our system.'}</div>
+      </div>
+    </div>
+    <div class="card tbl"><table>
+      <thead><tr><th>Fee</th><th class="r">Loan Estimate</th><th class="r">Our system</th><th class="r">Closing agent</th><th>Tolerance</th><th></th></tr></thead>
+      <tbody>${FEES.map(f => f.sec ? `<tr class="sec-row"><td colspan="6">${f.sec}</td></tr>` : (() => {
+        const cur = feeCur(f), ag = feeAgent(f), diff = ag !== cur;
+        return `<tr class="${diff ? 'flag' : ''}"><td>${f.name}</td><td class="r num">${money(f.le, 2)}</td><td class="r num">${money(cur, 2)}</td><td class="r num">${money(ag, 2)}</td><td class="small">${f.b}</td>
+        <td>${diff ? `<button class="btn sm" data-act="acceptFee" data-name="${f.name}">Accept agent figure</button>` : ''}</td></tr>`;
+      })()).join('')}</tbody>
+    </table></div>
+  </div>`;
+}
+
+function tabCompliance(checks) {
+  const groups = [...new Set(checks.map(c => c.g))];
+  const sym = { ok: '✓', warn: '!', bad: '×' };
+  return `<div class="stack">
+    <div class="section-h"><h2>Compliance and QC</h2><div class="row"><span class="small muted">Runs on every milestone change. Last run ${state.lastRun}.</span><button class="btn sm" data-act="runChecks">Run checks now</button></div></div>
+    <div class="card"><ul class="check-list">
+      ${groups.map(g => checks.filter(c => c.g === g).map(c => `<li><span class="mark ${c.res}">${sym[c.res]}</span><div><b>${c.name}</b><div class="small muted">${c.detail}</div></div><span class="small muted">${g}</span></li>`).join('')).join('')}
+    </ul></div>
+  </div>`;
+}
+
+function tabContacts() {
+  const people = [['Loan officer', 'Jordan Reyes', 'NMLS 1847220'], ['LO assistant', 'Bri Coleman', ''], ['Branch / sales manager', 'Alicia Romero', 'Sees all loans for the branch'], ['Processor', 'Tam Nguyen', 'Owner of decision status'], ['Processing manager', 'Dana Ruiz', 'Sees processing reports for her team'], ['Underwriter', 'Grace Whitfield', 'Signs off underwriting conditions'], ['Underwriting manager', 'Paul Okonkwo', ''], ['Closer / doc drawer', 'Omar Haddad', ''], ['Disclosure desk', 'Sofia Ramirez', 'Initial disclosures and re-disclosures'], ['Lock desk', 'Victor Hale', 'Lock, extensions, investor commitment'], ['Capital markets manager', 'Helen Cho', 'Hedging and loan sale'], ['Funder', 'Lena Park', ''], ['Post-closer', 'Nia Brooks', 'Post-close audit and investor delivery'], ['Closing manager', 'Rachel Stein', '']];
+  const vendors = [['Appraisal management', 'AMC on file'], ['Title and escrow', 'Title company · Elk Grove branch'], ['HOA', 'Rancho Larkspur HOA'], ['Tax transcripts', 'TaxStatus'], ['AVM', 'Clear Capital'], ['Bank data', 'Plaid'], ['Buyer’s agent', 'Dana Whitaker'], ['Insurance agent', 'Valley Home Insurance']];
+  return `<div class="grid-2">
+    <div class="card"><div class="an-head"><h3>Team on this file</h3><span class="small muted">Controls who can open the file</span></div>
+      <div class="tbl"><table><tbody>${people.map(p => `<tr><td class="small muted">${p[0]}</td><td><b>${p[1]}</b>${p[2] ? `<div class="note">${p[2]}</div>` : ''}</td></tr>`).join('')}</tbody></table></div></div>
+    <div class="card"><div class="an-head"><h3>Vendors and outside parties</h3><span class="small muted">Used for automatic orders</span></div>
+      <div class="tbl"><table><tbody>${vendors.map(p => `<tr><td class="small muted">${p[0]}</td><td><b>${p[1]}</b></td></tr>`).join('')}</tbody></table></div></div>
+  </div>`;
+}
+
+function tabAudit() {
+  return `<div class="stack">
+    <div class="section-h"><h2>Audit trail</h2><span class="small muted">Every change, who made it, and the before and after values.</span></div>
+    <div class="card"><ul class="timeline">${AUDIT.map(a => `<li><span class="mono small muted">${a[0]}</span><div><b>${a[1]}</b> · ${a[2]}${a[3] ? `<div class="diff"><del>${a[3][0]}</del> → <ins>${a[3][1]}</ins></div>` : ''}</div></li>`).join('')}</ul></div>
+  </div>`;
+}
+
+function mayaMs() { return state.ms === 6 ? (state.decision || 'Underwriting decision') : MILESTONES[state.ms].charAt(0).toUpperCase() + MILESTONES[state.ms].slice(1); }
+function myPipe() {
+  const rows = PIPE.map(p => p[7] ? [p[0], p[1], mayaMs(), p[3], p[4], p[5], p[6], true] : p);
+  const ms = ROLE_MS[roleNow()];
+  return ms ? rows.filter(p => ms.includes(p[2])) : rows;
+}
+const NEXT_BY_MS = { 'In underwriting': 'Review AUS findings', 'Sent to underwriting': 'Start review · DU ready', 'Conditionally approved': 'Collect 3 open conditions', 'Suspended': 'Get 12 more months of self-employment history', 'In closing': 'Draw closing documents', 'In processing': 'Fix 2 data mismatches', 'Disclosures': 'Send Loan Estimate by Oct 14', 'Wire requested': 'Confirm wire received', 'Loan origination': 'Verify property type, then price', 'Pending signing': 'Confirm signing appointment', 'Docs back': 'Run closing audit', 'Closing audit': 'Fix notary initials, then request wire', 'Post-close audit': 'Chase final title policy' };
+function nextStepFor(p) {
+  if (p[7]) { const s = wfStatus(roleNow()); return s.next ? `<b>${s.next.t}</b><div class="note">${s.done} of ${s.total} done</div>` : '<span class="muted">All steps done</span>'; }
+  return NEXT_BY_MS[p[2]] || '—';
+}
+const PIPE_ALERTS = { 'LN-2026-10471': 2, 'LN-2026-10466': 1, 'LN-2026-10490': 4, 'LN-2026-10495': 1, 'LN-2026-10499': 3, 'LN-2026-10462': 2, 'LN-2026-10448': 1 };
+function alertPill(p) {
+  const n = p[7] ? allAlerts().length : (PIPE_ALERTS[p[1]] || 0);
+  return n ? `<button class="bell has sm" ${p[7] ? 'data-act="openAlerts"' : 'data-act="noFile"'} aria-label="${n} alerts">${BELL}<span class="badge-n">${n}</span></button>` : '<span class="muted small">—</span>';
+}
+const PIPE_READY = { 'LN-2026-10471': 81, 'LN-2026-10466': 100, 'LN-2026-10490': 34, 'LN-2026-10495': 12, 'LN-2026-10457': 100, 'LN-2026-10499': 5, 'LN-2026-10462': 48, 'LN-2026-10493': 55, 'LN-2026-10451': 100, 'LN-2026-10448': 100 };
+function readyCell(p) { const v = p[7] ? readiness().pct : (PIPE_READY[p[1]] ?? 0); return `<span class="mini"><span class="mini-bar"><span style="width:${v}%"></span></span><span class="num small">${v}%</span></span>`; }
+function pipeTable(rows) {
+  return `<div class="card">
+    <div class="an-head"><h3>${ROLE_MS[roleNow()] ? (roleNow().includes('manager') ? 'Team queue' : 'My queue') : 'Active loans'} <span class="count">${rows.length}</span></h3><span class="small muted">Double-click a loan to open it. Maya Okafor’s file is fully built in this prototype.</span></div>
+    <div class="tbl"><table><thead><tr><th>Borrower</th><th>Alerts</th><th>Milestone</th><th>Ready for CTC</th><th>Your next step</th><th class="r">Days in stage</th><th>Close of escrow</th><th class="r">Amount</th><th>Watch</th></tr></thead>
+    <tbody>${rows.map(p => `<tr class="clickable ${state.sel === p[1] ? 'sel' : ''} ${p[6] ? 'flag' : ''}" data-row="${p[1]}" tabindex="0" title="Double-click to open">
+      <td><b>${p[0]}</b><div class="note mono">${p[1]}</div></td><td>${alertPill(p)}</td><td>${p[2]}</td><td>${readyCell(p)}</td><td class="small">${nextStepFor(p)}</td><td class="r num">${p[3]}</td><td class="small">${p[4] === '—' ? '—' : fmtDate(parseDate(p[4]))}</td><td class="r num">${money(p[5])}</td>
+      <td class="small">${p[6] ? `<span style="color:var(--warn)">${p[6]}</span>` : p[7] ? '<button class="btn sm" data-open="1">Open</button>' : ''}</td></tr>`).join('') || '<tr><td colspan="9" class="muted">Nothing in your queue.</td></tr>'}</tbody></table></div>
+  </div>`;
+}
+function renderQueue() {
+  const rows = myPipe(), role = roleNow();
+  const oldest = rows.reduce((m, p) => Math.max(m, p[3]), 0);
+  const flagged = rows.filter(p => p[6]).length;
+  return `<div class="sample">Sample pipeline for the prototype.</div>
+  <div class="section-h"><h1 style="font-size:22px">${role} pipeline</h1><span class="small muted">${role.includes('manager') ? 'All loans for the team you manage' : 'Loans where you are on the file contacts'}${ROLE_MS[role] ? ' and the milestone is your team’s to work' : ''}</span></div>
+  <div class="grid-4">
+    <div class="card pad kpi"><span class="k">In my queue</span><span class="v">${rows.length}</span></div>
+    <div class="card pad kpi"><span class="k">Oldest in stage</span><span class="v">${oldest} days</span></div>
+    <div class="card pad kpi"><span class="k">Flagged</span><span class="v">${flagged}</span></div>
+    <div class="card pad kpi"><span class="k">Closing in 7 days</span><span class="v">${rows.filter(p => p[4] !== '—' && parseDate(p[4]) - new Date(2026, 9, 12) <= 7 * 864e5).length}</span></div>
+  </div>
+  ${pipeTable(rows)}`;
+}
+function docCheck(f) {
+  if (f[4] === 'westlake' && state.undisclosedConfirmed) return ['ok', 'Added as liability'];
+  if (f[4] && f[4] !== 'westlake') { const d = DATA.find(x => x.id === f[4]); if (d && d.status === 'verified') return ['ok', 'Matches application']; }
+  return [f[2], f[3] || ''];
+}
+function docStatus(doc) {
+  if (doc.status) return [doc.status === 'Not received' ? 'neutral' : 'warn', doc.status];
+  const bad = doc.fields.some(f => docCheck(f)[0] !== 'ok');
+  return bad ? ['warn', 'Needs review'] : ['ok', 'Verified'];
+}
+function renderDocPanel() {
+  const groups = [...new Set(DOCS.map(d => d.group))];
+  const doc = DOCS.find(d => d.id === state.doc) || DOCS[0];
+  const st = docStatus(doc);
+  const cond = doc.cond ? CONDS.find(c => c.id === doc.cond) : null;
+  return `<aside class="card docpanel" aria-label="Documents">
+    <div class="an-head"><div><div class="an-c">eFolder</div><h3>Documents <span class="count">${DOCS.length}</span></h3></div><button class="btn sm" data-act="split">Close</button></div>
+    <ul class="doclist">${groups.map(g => `<li class="grp">${g}</li>${DOCS.filter(d => d.group === g).map(d => { const s = docStatus(d); return `<li><button data-doc="${d.id}" aria-current="${d.id === doc.id}"><span class="dn">${d.name}</span>${chip(s[0], s[1])}</button></li>`; }).join('')}`).join('')}</ul>
+    <div class="pad stack" style="padding-bottom:0">
+      <div class="section-h"><h3>${doc.name}</h3>${chip(st[0], st[1])}</div>
+      <div class="small muted">${doc.source} · ${doc.rec}${cond ? ` · satisfies condition <b>${cond.id}</b> (${cond.status})` : ''}</div>
+    </div>
+    ${doc.fields.length ? `<div class="paper">
+      <h4>${doc.name}</h4><div class="muted" style="margin-bottom:8px">Document view · ${doc.source.includes('digital') || doc.source.includes('IRS') ? 'pulled digitally, no upload' : 'classified automatically'}</div>
+      ${doc.tx ? `<table><tbody>${doc.tx.map(t => `<tr class="${t[3] ? 'hl' : ''}"><td class="mono">${t[0]}</td><td>${t[1]}</td><td class="r num">${t[2]}</td></tr>`).join('')}</tbody></table>`
+        : `<table><tbody>${doc.fields.map(f => `<tr><td class="muted">${f[0]}</td><td class="num">${f[1]}</td></tr>`).join('')}</tbody></table>`}
+    </div>
+    <div class="an-head" style="border-top:1px solid var(--line)"><h3>Extracted data</h3><span class="small muted">Checked against the loan file</span></div>
+    <div class="tbl"><table><tbody>${doc.fields.map(f => { const c = docCheck(f); return `<tr><td class="small muted">${f[0]}</td><td class="num small">${f[1]}</td><td>${chip(c[0], c[0] === 'ok' ? 'OK' : c[0] === 'bad' ? 'Issue' : 'Check')}${c[1] ? `<div class="note">${c[1]}</div>` : ''}</td></tr>`; }).join('')}</tbody></table></div>`
+    : `<div class="pad muted">Ordered automatically. It will be classified, read and matched to condition ${doc.cond} when it arrives.</div>`}
+  </aside>`;
+}
+
+function renderPipeline() { return renderQueue(); }
+
+// ---------- reporting ----------
+const PERIODS = { Week: 0.25, Month: 1, Quarter: 3, Year: 12 };
+const sc = n => Math.max(0, Math.round(n * PERIODS[state.period]));
+function bars(rows, unit, max) {
+  max = max || Math.max(...rows.map(r => r[1]));
+  return `<div class="funnel">${rows.map((r, i) => `<div class="fstep"><span class="small">${r[0]}</span><div class="ftrack"><div class="fbar" style="width:${max ? r[1] / max * 100 : 0}%;opacity:${r[2] ? 1 : .6}"></div></div><span class="num r">${r[1]}${unit || ''}</span><span class="num small muted conv">${r[3] || ''}</span></div>`).join('')}</div>`;
+}
+const kpis = list => `<div class="grid-4">${list.map(k => `<div class="card pad kpi"><span class="k">${k[0]}</span><span class="v">${k[1]}</span>${k[2] ? `<span class="small muted">${k[2]}</span>` : ''}</div>`).join('')}</div>`;
+const panel = (title, sub, body) => `<div class="card pad stack"><div class="section-h"><h3>${title}</h3><span class="small muted">${sub || ''}</span></div>${body}</div>`;
+const table = (head, rows, rAlign) => `<div class="card tbl"><table><thead><tr>${head.map((h, i) => `<th class="${i && rAlign ? 'r' : ''}">${h}</th>`).join('')}</tr></thead><tbody>${rows.map(r => `<tr>${r.map((c, i) => `<td class="${i && rAlign ? 'r num' : ''}">${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+
+const REPORTS = {
+  'Loan officer': () => {
+    const f = [['Application links sent', sc(48)], ['Completed applications', sc(31)], ['Consultations', sc(22)], ['Originated', sc(17)], ['Underwriting approved', sc(12)], ['Clear to close', sc(9)], ['Funded', sc(7)]]
+      .map((r, i, a) => [r[0], r[1], false, i && a[i - 1][1] ? Math.round(r[1] / a[i - 1][1] * 100) + '%' : '']);
+    const comp = [['Leads', 17, 6120000], ['Applications', 9, 3410000], ['Processing / underwriting', 6, 2588500], ['Clear to close', 2, 1298500], ['Closed this ' + state.period.toLowerCase(), sc(7), sc(3050000)]];
+    return `${kpis([['Funded volume', money(sc(3050000))], ['Pull-through', '41%', 'Application to funded'], ['Application to clear to close', '18.4 days'], ['Potential comp in pipeline', money(Math.round((6120000 + 3410000 + 2588500 + 1298500) * 0.01))]])}
+      <div class="grid-2">${panel('Funnel', 'Count · step conversion', bars(f))}${panel('Average days in each stage', 'Longest stages highlighted', bars([['Lead', 2.1], ['Application', 1.4], ['Processing', 4.8, 1], ['Underwriting', 2.6], ['Conditions', 3.9], ['Closing', 5.2, 1]], '', 6))}</div>
+      <div class="section-h"><h3>Potential compensation by stage</h3><span class="small muted">Plan: 100 bps of loan amount, $1,500 min, $9,500 max</span></div>
+      ${table(['Stage', 'Loans', 'Volume', 'Potential comp'], comp.map(c => [c[0], c[1], money(c[2]), money(Math.round(c[2] * 0.01))]), true)}`;
+  },
+  Processor: () => `${kpis([['Files in processing', 7, 'Right now'], ['Submitted to underwriting', sc(9)], ['Complete on first submission', '78%', 'No suspense for missing docs'], ['Average days in processing', '4.8']])}
+    <div class="grid-2">${panel('Average days by step', '', bars([['Sent → in processing', 0.4], ['In processing', 4.8, 1], ['Conditional approval → resubmit', 2.9, 1], ['Final approved → closing', 1.6]], '', 5))}
+    ${panel('Order turn times', 'Days from automatic order to received', bars([['Appraisal', 6.2, 1], ['HOA certification', 7.5, 1], ['Title report', 1.8], ['Tax transcripts', 0.9], ['Verbal VOE', 0.3]], '', 8))}</div>
+    ${table(['Outstanding today', 'Count'], [['Conditions assigned to me', 11], ['Orders not yet received', 4], ['Borrower items overdue 3+ days', 2], ['Closing dates within 7 days', 2]], true)}`,
+  Underwriter: () => `${kpis([['Files decided', sc(26)], ['Average turn time', '9.5 hrs', 'Submission to decision'], ['Suspense rate', '8%'], ['Auto-conditions kept as written', '84%', 'How often the rules engine was right']])}
+    <div class="grid-2">${panel('Decisions', '', bars([['Conditionally approved', sc(19), 1], ['Final approved (resubmits)', sc(5)], ['Suspended', sc(2)]]))}
+    ${panel('Most common conditions', 'What borrowers are asked for most', bars([['Large deposit explanation', sc(11), 1], ['Undisclosed debt', sc(6)], ['Income calculation variance', sc(5)], ['Gift documents', sc(4)], ['HOA documents', sc(4)]]))}</div>
+    ${table(['Turn time', 'Hours'], [['New submission to first decision', '9.5'], ['Resubmission to decision', '4.2'], ['Conditions received to cleared', '6.8']], true)}`,
+  Closer: () => `${kpis([['Docs drawn', sc(14)], ['Closed and funded', sc(12)], ['CDs delivered on time', '100%', 'Received 3+ business days before closing'], ['Files with fee mismatches', '21%', 'Our system vs. closing agent']])}
+    <div class="grid-2">${panel('Average time by step', '', bars([['Final approved → docs out', 1.2], ['Docs out → signing completed', 2.0, 1], ['Docs back → funded', 0.6]], ' d', 2.5))}
+    ${panel('Fee mismatches by closing agent', 'Share of files', bars([['Valley Title & Escrow', 44, 1], ['Capitol Escrow', 17], ['Sierra Title', 0]], '%', 100))}</div>
+    ${table(['Coming up', 'Count'], [['Closings in the next 7 days', 4], ['CDs to send this week', 3], ['Docs out, not yet signed', 2], ['Wires to request today', 1]], true)}`,
+};
+REPORTS.Funder = REPORTS.Closer;
+REPORTS['Disclosure desk'] = () => `${kpis([['Loan Estimates sent', sc(46)], ['Sent on time', '100%', 'Within 3 business days'], ['Average time to send', '5.2 hrs', 'Application complete to LE'], ['Re-disclosures', sc(9), 'Changed circumstances']])}<div class="grid-2">${panel('Re-disclosure reasons', '', bars([['Rate lock or relock', sc(4), 1], ['Loan amount change', sc(2)], ['Property type or value', sc(2)], ['Program change', sc(1)]]))}${panel('Package completeness', 'First send', bars([['Complete first time', 94, 1], ['Missing a state form', 4], ['Fee worksheet late', 2]], '%', 100))}</div>`;
+REPORTS['Lock desk'] = () => `${kpis([['Locked pipeline', money(sc(48600000)), sc(112) + ' loans'], ['Pull-through (locked to funded)', '78%'], ['Hedge coverage', '92%', 'Of expected fallout-adjusted pipeline'], ['Gain on sale', '142 bps', 'After hedge results']])}<div class="grid-2">${panel('Lock activity', '', bars([['New locks', sc(64), 1], ['Extensions', sc(11)], ['Relocks', sc(4)], ['Expired without funding', sc(3)]]))}${panel('Lock expirations', 'Next 30 days', bars([['This week', 9, 1], ['Next week', 14], ['Weeks 3–4', 21]]))}</div>${table(['Investor', 'Loans sold', 'Average price', 'Purchase suspense'], [['Fannie Mae', sc(41), '101.21', '1'], ['Wells Fargo', sc(18), '101.38', '0'], ['Freddie Mac', sc(12), '101.09', '2'], ['Chase', sc(6), '101.27', '0']], false)}`;
+REPORTS['Post-closer'] = () => `${kpis([['Loans delivered', sc(14)], ['Days funded to delivered', '6.2', 'Team average 8.0'], ['Post-close audit pass rate', '91%', 'First time, no findings'], ['Trailing docs outstanding', '9', '3 over 60 days']])}`;
+
+const TEAMS = {
+  'Capital markets manager': { label: 'lock desk analyst', base: 'Lock desk' },
+  'Branch manager': { label: 'loan officer', base: 'Loan officer', head: ['Loan officer', 'Applications', 'Originated', 'Funded', 'Volume', 'Pull-through'],
+    rows: [['Jordan Reyes', 31, 17, 7, 3050000, '41%'], ['Monica Sato', 26, 15, 8, 3480000, '53%'], ['Chris Abara', 19, 9, 3, 1110000, '33%'], ['Elena Vasquez', 34, 21, 11, 4620000, '52%']],
+    fmt: r => [r[0], sc(r[1]), sc(r[2]), sc(r[3]), money(sc(r[4])), r[5]] },
+  'Processing manager': { label: 'processor', base: 'Processor', head: ['Processor', 'Files now', 'Submitted', 'Avg days', 'First-pass complete'],
+    rows: [['Tam Nguyen', 7, 9, 4.8, '78%'], ['Kelsey Moore', 9, 11, 5.6, '71%'], ['Ravi Shah', 5, 8, 3.9, '86%']],
+    fmt: r => [r[0], r[1], sc(r[2]), r[3], r[4]] },
+  'Underwriting manager': { label: 'underwriter', base: 'Underwriter', head: ['Underwriter', 'Decided', 'Avg turn time', 'Suspense rate', 'Auto-conditions kept'],
+    rows: [['Grace Whitfield', 26, '9.5 hrs', '8%', '84%'], ['Marco Diaz', 31, '7.2 hrs', '6%', '88%'], ['Ines Alvarez', 19, '12.1 hrs', '11%', '79%']],
+    fmt: r => [r[0], sc(r[1]), r[2], r[3], r[4]] },
+  'Closing manager': { label: 'closer and funder', base: 'Closer', head: ['Team member', 'Role', 'Completed', 'Avg time', 'On-time CDs'],
+    rows: [['Omar Haddad', 'Closer', 14, '1.2 days to docs out', '100%'], ['Jay Kim', 'Closer', 11, '1.6 days to docs out', '97%'], ['Lena Park', 'Funder', 12, '14 hrs docs back to funded', '—']],
+    fmt: r => [r[0], r[1], sc(r[2]), r[3], r[4]] },
+};
+
+// ---------- leaderboards (ranked within a manager's team) ----------
+const pct = v => v + '%', days = v => v + ' days', hrs = v => v + ' hrs';
+const BOARDS = {
+  'Loan officer': { manager: 'Alicia Romero', mgrRole: 'Branch manager', team: 'loan officers',
+    metrics: [['vol', 'Funded volume', v => money(sc(v)), 'high'], ['units', 'Funded loans', v => sc(v), 'high'], ['pull', 'Pull-through', pct, 'high'], ['ctc', 'Application to CTC', days, 'low'], ['clean', 'Clean submissions', pct, 'high']],
+    members: [['Jordan Reyes', { vol: 3050000, units: 7, pull: 41, ctc: 18.4, clean: 88 }], ['Monica Sato', { vol: 3480000, units: 8, pull: 53, ctc: 16.1, clean: 92 }], ['Chris Abara', { vol: 1110000, units: 3, pull: 33, ctc: 22.7, clean: 71 }], ['Elena Vasquez', { vol: 4620000, units: 11, pull: 52, ctc: 19.3, clean: 84 }]] },
+  Processor: { manager: 'Dana Ruiz', mgrRole: 'Processing manager', team: 'processors',
+    metrics: [['sub', 'Submitted to underwriting', v => sc(v), 'high'], ['fp', 'Complete on first submission', pct, 'high'], ['dip', 'Days in processing', days, 'low'], ['cc', 'Conditions cleared', v => sc(v), 'high']],
+    members: [['Tam Nguyen', { sub: 9, fp: 78, dip: 4.8, cc: 61 }], ['Kelsey Moore', { sub: 11, fp: 71, dip: 5.6, cc: 74 }], ['Ravi Shah', { sub: 8, fp: 86, dip: 3.9, cc: 52 }], ['Lucia Fernandez', { sub: 10, fp: 80, dip: 4.4, cc: 66 }]] },
+  Underwriter: { manager: 'Paul Okonkwo', mgrRole: 'Underwriting manager', team: 'underwriters',
+    metrics: [['dec', 'Files decided', v => sc(v), 'high'], ['tt', 'Average turn time', hrs, 'low'], ['sd', 'Same-day decisions', pct, 'high'], ['qc', 'Post-close QC defect rate', pct, 'low']],
+    members: [['Grace Whitfield', { dec: 26, tt: 9.5, sd: 69, qc: 2 }], ['Marco Diaz', { dec: 31, tt: 7.2, sd: 77, qc: 4 }], ['Ines Alvarez', { dec: 19, tt: 12.1, sd: 52, qc: 1 }], ['Ben Torres', { dec: 24, tt: 8.8, sd: 71, qc: 3 }]] },
+  Closer: { manager: 'Rachel Stein', mgrRole: 'Closing manager', team: 'closers',
+    metrics: [['drawn', 'Docs drawn', v => sc(v), 'high'], ['dto', 'Final approval to docs out', days, 'low'], ['otc', 'On-time CDs', pct, 'high'], ['zc', 'Zero-cure closings', pct, 'high']],
+    members: [['Omar Haddad', { drawn: 14, dto: 1.2, otc: 100, zc: 100 }], ['Jay Kim', { drawn: 11, dto: 1.6, otc: 97, zc: 91 }], ['Priya Shah', { drawn: 16, dto: 1.4, otc: 100, zc: 94 }]] },
+  'Disclosure desk': { manager: 'Dana Ruiz', mgrRole: 'Processing manager', team: 'disclosure desk',
+    metrics: [['les', 'Loan Estimates sent', v => sc(v), 'high'], ['hrs', 'Time to send', hrs, 'low'], ['ontime', 'Sent on time', pct, 'high'], ['redisc', 'Re-disclosure errors', pct, 'low']],
+    members: [['Sofia Ramirez', { les: 46, hrs: 5.2, ontime: 100, redisc: 1 }], ['Devin Clark', { les: 39, hrs: 7.8, ontime: 98, redisc: 3 }], ['Amara Osei', { les: 51, hrs: 4.6, ontime: 100, redisc: 2 }]] },
+  'Lock desk': { manager: 'Helen Cho', mgrRole: 'Capital markets manager', team: 'lock desk',
+    metrics: [['locks', 'Locks processed', v => sc(v), 'high'], ['conf', 'Lock confirmation time', v => v + ' min', 'low'], ['ext', 'Extension rate', pct, 'low'], ['err', 'Lock errors', pct, 'low']],
+    members: [['Victor Hale', { locks: 64, conf: 11, ext: 9, err: 1 }], ['Leah Kim', { locks: 58, conf: 8, ext: 12, err: 0 }]] },
+  Funder: { manager: 'Rachel Stein', mgrRole: 'Closing manager', team: 'funders',
+    metrics: [['fund', 'Loans funded', v => sc(v), 'high'], ['dbf', 'Docs back to funded', hrs, 'low'], ['sdf', 'Same-day fundings', pct, 'high']],
+    members: [['Lena Park', { fund: 12, dbf: 14, sdf: 100 }], ['Ari Benson', { fund: 15, dbf: 19, sdf: 93 }]] },
+};
+const MGR_BOARDS = { 'Branch manager': ['Loan officer'], 'Processing manager': ['Processor', 'Disclosure desk'], 'Underwriting manager': ['Underwriter'], 'Closing manager': ['Closer', 'Funder'], 'Capital markets manager': ['Lock desk'] };
+function rankOf(board, key) {
+  const m = board.metrics.find(x => x[0] === key);
+  return [...board.members].sort((a, b) => m[3] === 'high' ? b[1][key] - a[1][key] : a[1][key] - b[1][key]);
+}
+function leaderboard(bk, me) {
+  const B = BOARDS[bk]; state.lb = state.lb || {};
+  const key = state.lb[bk] || B.metrics[0][0];
+  const sorted = rankOf(B, key), n = B.members.length;
+  const ord = i => ['1st', '2nd', '3rd'][i] || `${i + 1}th`;
+  const mine = me ? B.metrics.map(m => { const r = rankOf(B, m[0]).findIndex(x => x[0] === me); return `<span class="standing ${r === 0 ? 'top' : ''}"><b>${ord(r)}</b> of ${n} · ${m[1]}</span>`; }).join('') : '';
+  return `<div class="card">
+    <div class="an-head"><div><div class="an-c">${B.manager}’s team · ${B.mgrRole.toLowerCase()}</div><h3>Leaderboard: ${B.team}</h3></div><span class="small muted">Ranked only within this team</span></div>
+    ${me ? `<div class="pad standings"><span class="label">Your standing</span>${mine}</div>` : ''}
+    <div class="pad" style="padding-bottom:8px"><div class="subtabs lb-metrics" role="group" aria-label="Rank by">${B.metrics.map(m => `<button data-act="lbMetric" data-board="${bk}" data-v="${m[0]}" aria-pressed="${key === m[0]}">${m[1]}</button>`).join('')}</div></div>
+    <div class="tbl"><table><thead><tr><th>Rank</th><th>${bk === 'Loan officer' ? 'Loan officer' : bk}</th>${B.metrics.map(m => `<th class="r ${m[0] === key ? 'lb-sort' : ''}">${m[1]}${m[3] === 'low' ? ' <span class="muted">(lower is better)</span>' : ''}</th>`).join('')}</tr></thead>
+    <tbody>${sorted.map((x, i) => `<tr class="${x[0] === me ? 'me-row' : ''}"><td><span class="rank ${i < 3 ? 'r' + (i + 1) : ''}">${i + 1}</span></td><td><b>${x[0]}</b>${x[0] === me ? ' <span class="you">You</span>' : ''}</td>${B.metrics.map(m => `<td class="r num ${m[0] === key ? 'lb-sort' : ''}">${m[2](x[1][m[0]])}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
+  </div>`;
+}
+
+function renderReporting() {
+  const role = roleNow(), team = TEAMS[role];
+  const periodPicker = `<div class="subtabs" role="group" aria-label="Time period">${Object.keys(PERIODS).map(p => `<button data-act="period" data-v="${p}" aria-pressed="${state.period === p}">${p === 'Week' ? 'Last week' : p === 'Month' ? 'Last month' : p === 'Quarter' ? 'Last 3 months' : 'Last year'}</button>`).join('')}</div>`;
+  const head = `<div class="sample">Sample reporting for the prototype.</div>
+    <div class="section-h"><h1 style="font-size:22px">${role} reporting</h1>${periodPicker}</div>`;
+  if (team) {
+    return `${head}<div class="small muted">Your team: everyone assigned to you as their manager. Ranked on the same KPIs each of them sees.</div>
+      ${MGR_BOARDS[role].map(bk => leaderboard(bk, null)).join('')}
+      <div class="section-h"><h2>Department detail</h2><span class="small muted">The ${team.base.toLowerCase()} report, for the whole team</span></div>
+      ${REPORTS[team.base]()}`;
+  }
+  const PACE = {
+    'Loan officer': [['Clean submissions in a row', '5', 'Files sent to processing with zero data gaps'], ['Fastest application to CTC', '11 days', 'Personal best, Sep'], ['Digital-first rate', '88%', 'Up from 74% last month']],
+    Processor: [['First-pass complete in a row', '7', 'No suspense for missing documents'], ['Average days in processing', '4.8', 'Team average 5.4'], ['Orders auto-placed', '100%', 'No manual orders this month']],
+    Underwriter: [['Same-day decisions', '18 of 26', 'Personal best this month'], ['Auto-conditions kept as written', '84%', 'Rules engine accuracy on your files'], ['Resubmits decided within 4 hrs', '92%', '']],
+    Closer: [['On-time CDs in a row', '42', 'Every CD received 3+ business days before closing'], ['Zero-cure closings', '14 of 14', 'No tolerance cures this month'], ['Avg final approval to docs out', '1.2 days', 'Team average 1.5']],
+    'Disclosure desk': [['On-time Loan Estimates in a row', '138', 'Never late this year'], ['Fastest send this month', '1.4 hrs', 'Application complete to LE'], ['Packages complete first time', '96%', '']],
+    'Lock desk': [['Lock confirmations under 15 min', '94%', ''], ['Extensions avoided', '6', 'Closings moved inside the lock'], ['Best-ex uplift', '+18 bps', 'Versus default investor']],
+    'Post-closer': [['Delivered within 7 days', '12 of 14', ''], ['Clean purchase reviews', '9 in a row', 'No investor suspense'], ['Trailing docs cleared', '31', 'This month']],
+    Funder: [['Same-day fundings', '12 of 12', ''], ['Avg docs back to funded', '14 hrs', 'Team average 19 hrs'], ['Wire errors', '0', '90 days running']],
+  };
+  const pace = PACE[role] ? `<div class="section-h"><h3>Your pace</h3><span class="small muted">Streaks and personal bests</span></div>${kpis(PACE[role])}` : '';
+  const lb = BOARDS[role] ? leaderboard(role, PEOPLE[role]) : '';
+  return `${head}<div class="small muted">Showing loans where you are listed as ${role.toLowerCase()}.</div>${pace}${lb}${REPORTS[role]()}`;
+}
+
+// ---------- events ----------
+document.addEventListener('click', e => {
+  const al = e.target.closest('[data-alertdoc],[data-alertgo]');
+  if (al) {
+    if (al.dataset.alertdoc) { state.split = true; state.doc = al.dataset.alertdoc; state.alertsOpen = false; }
+    else { const a = allAlerts().find(x => x.id === al.dataset.alertgo); state.tab = a.go; if (a.page !== undefined) state.appPage = a.page; state.alertsOpen = false; }
+    render(); return;
+  }
+  const el = e.target.closest('[data-view],[data-tab],[data-goto],[data-act],[data-open],[data-doc],[data-row]');
+  if (!el) return;
+  if (el.dataset.view) { if (el.dataset.view === 'docs') { state.view = 'loan'; state.split = true; } else if (el.dataset.view === 'loan' && state.view !== 'loan') { openLoan(); return; } else state.view = el.dataset.view; render(); window.scrollTo({ top: 0 }); return; }
+  if (el.dataset.doc) { state.view = 'loan'; state.split = true; state.doc = el.dataset.doc; render(); return; }
+  if (el.dataset.tab) { state.tab = el.dataset.tab; render(); return; }
+  if (el.dataset.goto === 'alerts') { state.alertsOpen = true; render(); return; }
+  if (el.dataset.page) state.appPage = Number(el.dataset.page);
+  if (el.dataset.goto) { state.tab = el.dataset.goto; render(); window.scrollTo({ top: 0 }); return; }
+  if (el.dataset.open) { openLoan(); return; }
+  if (el.dataset.row) { state.sel = el.dataset.row; document.querySelectorAll('tr[data-row]').forEach(tr => tr.classList.toggle('sel', tr === el)); return; }
+  const act = el.dataset.act, role = roleNow(); const investorExpBefore = investorExp().label; const rBefore = readiness().pct; lastToast = '';
+  const who = `${PEOPLE[role]} (${role})`;
+  if (act === 'apply') {
+    const d = DATA.find(x => x.id === el.dataset.id);
+    audit(who, `Updated application: ${d.field}`, [d.stated, d.apply]);
+    d.stated = d.apply; d.status = 'verified'; delete d.apply;
+    toast(`${d.field} updated to the verified value`);
+  }
+  if (act === 'confirmDebt') {
+    state.undisclosedConfirmed = true;
+    LIABS.push({ id: 'westlake', name: 'Westlake Financial', type: 'Auto', bal: 0, app: 412, credit: null, used: 412, onApp: true, src: 'bank', rule: 'Found on bank statements; payoff requested' });
+    audit(who, 'Added liability found on bank statements: Westlake Financial $412/mo', [`${LIABS.length - 1} debts`, `${LIABS.length} debts`]);
+    const u2 = CONDS.find(c => c.id === 'U2'); u2.title = 'Westlake Financial: provide statement and payoff';
+    toast('Liability added. DTI updated. DU rerun needed.');
+  }
+  if (act === 'condtab') { state.condTab = el.dataset.v; }
+  if (act === 'split') { state.split = !state.split; }
+  if (act === 'period') { state.period = el.dataset.v; }
+  if (act === 'alerts') { state.alertsOpen = true; }
+  if (act === 'addReo') { const r = SAMPLE_REO[REO.length]; REO.push(r); audit(who, `Added REO property: ${r.address} (${r.use})`, [investorExpBefore, investorExp().label]); toast(`Investor experience: ${investorExp().label}`); }
+  if (act === 'removeReo') { const r = REO.pop(); audit(who, `Removed REO property: ${r.address}`, [investorExpBefore, investorExp().label]); toast(`Investor experience: ${investorExp().label}`); }
+  if (act === 'lbMetric') { state.lb = state.lb || {}; state.lb[el.dataset.board] = el.dataset.v; }
+  if (act === 'auditFix' || act === 'auditAccept' || act === 'auditCond') {
+    const f = [...closingFindings(), ...postFindings()].find(x => x.id === el.dataset.id);
+    const res = act === 'auditFix' ? 'Resolved' : act === 'auditAccept' ? 'Accepted with note' : null;
+    if (res) { state.auditRes[f.id] = res; audit(who, `Audit finding ${res.toLowerCase()}: ${f.field}`, ['Open', res]); toast(`${f.field}: ${res.toLowerCase()}`); }
+    else { CONDS.push({ id: 'F' + (CONDS.length + 1), list: 'uw', title: `Closing agent: ${f.issue || f.field}`, assigned: 'Closer', signoff: 'Funder', timing: 'Prior to funding', status: 'Open', source: 'Closing audit', released: true }); audit(who, `Requested from closing agent: ${f.field}`); toast('Request sent to the closing agent and added as a prior-to-funding condition'); }
+  }
+  if (act === 'demoDocsBack') { state.decision = 'Final approved'; state.ms = 12; [7, 8, 9, 10, 11, 12].forEach(i => state.msDates[i] = [now(), 'Prototype']); audit(who, 'Prototype: moved loan to Closing audit with signed package uploaded'); audit('System', 'Ran closing audit on the signed package'); toast('Signed package received. Closing audit ran.'); }
+  if (act === 'demoFunded') { state.decision = 'Final approved'; state.ms = 17; ['cd6', 'cx1', 'cx4', 'cx3', 'cd7'].forEach(id => state.auditRes[id] = state.auditRes[id] || 'Resolved'); [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17].forEach(i => state.msDates[i] = [now(), 'Prototype']); audit(who, 'Prototype: moved loan to Post-close audit (funded)'); toast('Loan funded. Post-close audit ran.'); }
+  if (act === 'trailing') { state.trailing = true; audit('System', 'Trailing documents received: recorded deed of trust, final title policy'); toast('Trailing documents received and filed'); }
+  if (act === 'buildPkg') { state.pkgBuilt = true; audit(who, `Built investor package for ${LOAN.investor}`); toast('Package built in investor stacking order'); }
+  if (act === 'deliver') { state.delivered = true; state.ms = Math.max(state.ms, 19); state.msDates[19] = [now(), who]; audit(who, `Delivered loan to ${LOAN.investor}`, ['Investor delivery', 'Delivered to investor']); toast(`Delivered to ${LOAN.investor}`); }
+  if (act === 'lockExtend') { const was = LOAN.lockExp; const d = parseDate(LOAN.lockExp); d.setDate(d.getDate() + 7); LOAN.lockExp = iso(d); state.lockLog.push({ type: 'ext' }); audit(who, 'Extended rate lock 7 days (−0.125 price)', [fmtDate(parseDate(was)), fmtDate(d)]); toast('Lock extended 7 days'); }
+  if (act === 'pickInvestor') { const was = LOAN.investor; LOAN.investor = el.dataset.v; state.manual['lk-bestex'] = true; audit(who, 'Selected investor (best execution)', [was, LOAN.investor]); toast(`Investor set to ${LOAN.investor}. Delivery requirements updated.`); }
+  if (act === 'purchased') { state.purchased = true; state.ms = 20; state.msDates[20] = [now(), who]; audit(who, 'Purchase advice received and reconciled; warehouse line paid off', ['Delivered to investor', 'Purchased by investor']); toast('Purchase reconciled. Warehouse line paid off.'); }
+  if (act === 'journey') { state.journeyOpen = !state.journeyOpen; }
+  if (act === 'editProfile') { state.editProfile = !state.editProfile; }
+  if (act === 'alertsClose') { state.alertsOpen = false; }
+  if (act === 'openAlerts') { state.view = 'loan'; state.tab = myTab(); state.alertsOpen = true; }
+  if (act === 'noFile') { toast('Only Maya Okafor’s file is built out in this prototype.'); return; }
+  if (act === 'applyAlert' || act === 'applyAll') {
+    const targets = act === 'applyAll' ? fixAlerts() : fixAlerts().filter(a => a.id === el.dataset.id);
+    targets.forEach(a => { const r = a.apply(); audit(who, `Updated application from alert: ${r[0]}`, [r[1], r[2]]); });
+    state.lastRun = now();
+    toast(targets.length > 1 ? `${targets.length} updates made to the application and logged` : 'Application updated and logged');
+  }
+  if (act === 'apppage') { state.appPage = Number(el.dataset.v); }
+  if (act === 'reprice') { state.lastRun = now(); audit(who, 'Re-ran pricing with verified data: 6.125%, 0.18 points (no change)'); toast('Pricing re-run. No change: inputs were already verified.'); }
+  if (act === 'wfdone') { const st = Object.values(WORKFLOWS).flatMap(w => w.steps).find(x => x.key === el.dataset.key); state.manual[el.dataset.key] = true; audit(who, `Completed workflow step: ${st.t}`); toast('Step done. Next step is up.'); }
+  if (act === 'release') {
+    const c = CONDS.find(x => x.id === el.dataset.id); c.status = 'Open'; c.released = true;
+    audit(who, `Validated condition and released to ${c.assigned === 'Borrower' ? 'borrower portal' : c.assigned}: ${c.title}`);
+    toast('Condition validated and released');
+  }
+  if (act === 'releaseAll') {
+    CONDS.filter(c => c.status === 'Added').forEach(c => { c.status = 'Open'; c.released = true; audit(who, `Validated condition and released: ${c.title}`); });
+    toast('All draft conditions validated and released');
+  }
+  if (act === 'clear') {
+    const c = CONDS.find(x => x.id === el.dataset.id);
+    if (role !== c.signoff || c.status !== 'Satisfied') return;
+    audit(who, `Cleared condition: ${c.title}`, [c.status, 'Cleared']); c.status = 'Cleared'; c.by = `Cleared by ${who}`;
+    toast('Condition cleared and logged');
+  }
+  if (act === 'satisfy') {
+    const c = CONDS.find(x => x.id === el.dataset.id);
+    audit(who, `Marked condition satisfied: ${c.title}`, ['Open', 'Satisfied']); c.status = 'Satisfied'; c.note = `Satisfied ${now()}`;
+    toast(`Satisfied. Waiting for ${c.signoff} sign-off.`);
+  }
+  if (act === 'waiveStart') { state.waiving = el.dataset.id; }
+  if (act === 'waiveCancel') { state.waiving = null; }
+  if (act === 'waive') {
+    const c = CONDS.find(x => x.id === el.dataset.id); const reason = $('#waive-' + c.id).value;
+    audit(who, `Waived condition: ${c.title} (${reason})`, [c.status, 'Waived']); c.status = 'Waived'; c.waivedReason = reason; c.by = `Waived by ${who}`; state.waiving = null;
+    toast('Condition waived. Reason logged.');
+  }
+  if (act === 'acceptFee') {
+    const f = FEES.find(x => x.name === el.dataset.name);
+    audit(who, `Accepted closing agent figure: ${f.name}`, [money(f.cur, 2), money(f.agent, 2)]); f.cur = f.agent;
+    toast('Fee updated. Tolerance re-checked.');
+  }
+  if (act === 'runChecks') { state.lastRun = now(); audit('System', 'Ran compliance and QC checks (manual)'); toast('Checks complete'); }
+  if (act === 'decide') {
+    state.msDates[6] = [now(), who];
+    state.ms = 6; state.decision = el.dataset.v; state.lastRun = now();
+    audit(who, 'Underwriting decision', ['In underwriting', el.dataset.v]);
+    audit('System', `Ran compliance and QC checks on milestone change`);
+    toast(`${el.dataset.v}. Checks ran. File now owned by the processor.`);
+  }
+  if (act === 'resubmit') {
+    state.ms = 5; audit(who, 'Resubmitted to underwriting', [state.decision, 'In underwriting']); state.decision = null; state.lastRun = now();
+    toast('Resubmitted. Checks ran.');
+  }
+  if (act === 'advance' && ((state.ms === 12 && !closingAuditPassed()) || (state.ms === 17 && !postAuditPassed()))) { toast('Resolve the blocking audit findings first'); render(); return; }
+  if (act === 'advance') {
+    const from = state.ms === 6 ? state.decision : MILESTONES[state.ms];
+    state.ms = state.ms + 1; state.lastRun = now();
+    audit(who, 'Moved milestone', [from, MILESTONES[state.ms]]);
+    audit('System', 'Ran compliance and QC checks on milestone change');
+    toast(`Moved to ${MILESTONES[state.ms]}. Checks ran.`);
+    state.msDates[state.ms] = [now(), who];
+  }
+  render();
+  const gain = readiness().pct - rBefore;
+  if (gain > 0 && lastToast) toast(`${lastToast}  ·  +${gain}% toward clear to close`);
+});
+function searchIndex() {
+  const screens = [['summary', 'Summary'], ['app', 'Loan application (1003)'], ['credit', 'Credit analysis'], ['income', 'Income and employment analysis'], ['assets', 'Asset analysis'], ['property', 'Property analysis'], ['conditions', 'Conditions'], ['orders', 'Orders'], ['fees', 'Fees and closing'], ['caudit', 'Closing audit'], ['delivery', 'Post-close and investor delivery'], ['compliance', 'Compliance and QC'], ['contacts', 'File contacts'], ['audit', 'Audit trail'], ...Object.entries(ROLE_TAB).map(([r, t]) => [t, r + ' workflow'])];
+  const out = screens.map(([t, l]) => ({ label: l, where: 'Screen', tab: t }));
+  out.push({ label: 'Alerts', where: 'Panel', alerts: true });
+  appFields().forEach((pg, i) => pg.forEach(f => { if (f.length > 1) out.push({ label: f[0], where: `1003 · page ${i + 1}`, tab: 'app', page: i }); }));
+  DOCS.forEach(d => out.push({ label: d.name, where: 'Document', doc: d.id }));
+  CONDS.forEach(c => out.push({ label: c.title, where: 'Condition', tab: 'conditions', list: c.list }));
+  return out;
+}
+// ---------- alerts ----------
+function allAlerts() {
+  const out = [];
+  const dd = id => DATA.find(x => x.id === id);
+  if (!state.formerAdded) out.push({ id: 'former', cat: 'Loan application', sev: 'bad', fix: true, title: 'Add missing former address to the 1003',
+    detail: 'Credit report shows <b>220 W Pine St, Lodi, CA</b> (2024). The application lists no former address for the last 2 years.', from: 'Missing', to: '220 W Pine St, Lodi · rented 03/2023–08/2024', doc: 'credit', go: 'app', page: 0,
+    apply: () => { state.formerAdded = true; return ['Former address', 'Missing', '220 W Pine St, Lodi']; } });
+  LIABS.filter(l => l.onApp && l.app !== l.used && l.src === 'credit').forEach(l => out.push({ id: 'pay-' + l.id, cat: 'Credit', sev: 'warn', fix: true, title: `Correct ${l.name} payment on the 1003`,
+    detail: l.rule, from: money(l.app) + '/mo', to: money(l.used) + '/mo', doc: 'credit', go: 'credit',
+    apply: () => { const was = l.app; l.app = l.used; return [`${l.name} payment`, money(was), money(l.used)]; } }));
+  LIABS.filter(l => !l.onApp).forEach(l => out.push({ id: 'add-' + l.id, cat: 'Credit', sev: 'bad', fix: true, title: `Add ${l.name} to the 1003 liabilities`,
+    detail: `On the credit report, not on the application. ${money(l.bal)} balance, ${money(l.credit)}/mo. ${l.rule}.`, from: 'Not listed', to: `${l.name} · ${money(l.credit)}/mo`, doc: 'credit', go: 'credit',
+    apply: () => { l.onApp = true; l.app = l.used; return [`Liability ${l.name}`, 'Not listed', 'Added']; } }));
+  if (!state.undisclosedConfirmed) out.push({ id: 'westlake', cat: 'Assets', sev: 'bad', fix: true, title: 'Add liability found on bank statements',
+    detail: '$412/mo to Westlake Financial (auto lender) in Jul, Aug and Sep. Not on the application or credit report.', from: 'Not listed', to: 'Westlake Financial · $412/mo', doc: 'bank-sep', go: 'assets',
+    apply: () => { const before = LIABS.length; state.undisclosedConfirmed = true; LIABS.push({ id: 'westlake', name: 'Westlake Financial', type: 'Auto', bal: 0, app: 412, credit: null, used: 412, onApp: true, src: 'bank', rule: 'Found on bank statements; payoff requested' }); const u2 = CONDS.find(c => c.id === 'U2'); u2.title = 'Westlake Financial: provide statement and payoff'; return ['Liabilities', before + ' debts', LIABS.length + ' debts']; } });
+  [['income', 'Income', 'Update income to our income calculation', 'Base pay annualized from pay stub ($131,800 ÷ 12), supported by 2024–25 W-2 transcripts.', 'paystub', 'income'],
+   ['bank', 'Assets', 'Update asset balance from bank statement', 'Golden 1 checking ••4471 ending balance on the Sep statement (Plaid).', 'bank-sep', 'assets'],
+   ['tax', 'Property', 'Update property taxes from public records', '2025–26 tax bill $8,112 ÷ 12.', 'title', 'property'],
+   ['hoi', 'Property', 'Update homeowner’s insurance from quote', 'Valley Home Insurance quote, Oct 7.', null, 'property']].forEach(([id, cat, title, detail, doc, go]) => {
+    const d = dd(id); if (d && d.status === 'mismatch') out.push({ id: 'data-' + id, cat, sev: 'warn', fix: true, title, detail, from: d.stated, to: d.apply, doc, go,
+      apply: () => { const was = d.stated; d.stated = d.apply; d.status = 'verified'; delete d.apply; return [d.field, was, d.stated]; } });
+  });
+  // attention alerts (no one-click fix)
+  if (draftConds()) out.push({ id: 'conds', cat: 'Conditions', sev: 'info', title: `${draftConds()} new conditions waiting for underwriter review`, detail: 'Hidden from the borrower portal until validated.', go: 'conditions' });
+  if (!cleared('P5')) out.push({ id: 'gift', cat: 'Assets', sev: 'info', title: 'Gift letter waiting on donor signature', detail: 'Sent Oct 8 to Adaeze Okafor. Reminder sent Oct 10.', doc: 'gift', go: 'conditions' });
+  out.push({ id: 'cd', cat: 'Compliance', sev: 'info', title: `Send the Closing Disclosure by ${fmtDate(cdDates().sendBy)}`, detail: `Borrower must receive it by ${fmtDate(cdDates().receiveBy)} for a ${fmtDate(parseDate(state.closeDate))} closing.`, go: 'fees' });
+  return out.filter(a => !state.dismissed[a.id]);
+}
+const fixAlerts = () => allAlerts().filter(a => a.fix);
+function renderAlerts() {
+  const list = allAlerts(), fixes = list.filter(a => a.fix), notes = list.filter(a => !a.fix);
+  const card = a => `<li class="alert-card sev-${a.sev}">
+    <div class="row spread"><span class="small muted">${a.cat}</span>${a.fix ? chip(a.sev === 'bad' ? 'bad' : 'warn', a.sev === 'bad' ? 'Missing' : 'Doesn’t match') : chip('info', 'Heads up')}</div>
+    <b>${a.title}</b>
+    <div class="small">${a.detail}</div>
+    ${a.fix ? `<div class="diff">Application: <del>${a.from}</del> → <ins>${a.to}</ins></div>` : ''}
+    <div class="row" style="gap:6px">${a.fix ? `<button class="btn sm primary" data-act="applyAlert" data-id="${a.id}">Update application</button>` : ''}${a.doc ? `<button class="btn sm" data-alertdoc="${a.doc}">View source</button>` : ''}${a.go ? `<button class="btn sm" data-alertgo="${a.id}">Go to screen</button>` : ''}</div>
+  </li>`;
+  return `<div class="drawer-back" data-act="alertsClose"></div>
+  <aside class="drawer" role="dialog" aria-label="Loan alerts">
+    <div class="an-head"><div><div class="an-c">${LOAN.borrower}</div><h3>Alerts <span class="count ${list.length ? 'alert' : ''}">${list.length}</span></h3></div><button class="btn sm" data-act="alertsClose">Close</button></div>
+    ${fixes.length ? `<div class="pad row spread" style="padding-bottom:0"><span class="small muted">${fixes.length} gap${fixes.length > 1 ? 's' : ''} between the application and verified data</span><button class="btn sm primary" data-act="applyAll">Update all ${fixes.length}</button></div>` : '<div class="pad small muted">The application matches verified data.</div>'}
+    <ul class="alert-list">${fixes.map(card).join('')}</ul>
+    ${notes.length ? `<div class="pad label" style="padding-bottom:0">Also needs attention</div><ul class="alert-list">${notes.map(card).join('')}</ul>` : ''}
+  </aside>`;
+}
+function openLoan() { state.view = 'loan'; state.tab = myTab(); render(); window.scrollTo({ top: 0 }); }
+function tryOpen(id) { if (id === LOAN.id) openLoan(); else { state.sel = id; toast('Only Maya Okafor’s file is built out in this prototype.'); } }
+document.addEventListener('input', e => {
+  if (e.target.id !== 'loanSearch') return;
+  const q = e.target.value.trim().toLowerCase(), box = $('#searchResults');
+  if (!q) { box.hidden = true; return; }
+  const hits = searchIndex().filter(h => h.label.toLowerCase().includes(q)).slice(0, 10);
+  box.innerHTML = hits.length ? hits.map((h, i) => `<button data-hit="${i}"><span>${h.label}</span><span class="small muted">${h.where}</span></button>`).join('') : '<div class="pad small muted">Nothing matches. Try a field, document or screen name.</div>';
+  box._hits = hits; box.hidden = false;
+});
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-hit]'); const box = $('#searchResults');
+  if (b && box) { const h = box._hits[Number(b.dataset.hit)]; if (h.alerts) state.alertsOpen = true; else if (h.doc) { state.split = true; state.doc = h.doc; } else { state.tab = h.tab; if (h.page !== undefined) state.appPage = h.page; if (h.list) state.condTab = h.list; } render(); return; }
+  if (box && !e.target.closest('.search')) box.hidden = true;
+}, true);
+document.addEventListener('dblclick', e => { const tr = e.target.closest('tr[data-row]'); if (tr) tryOpen(tr.dataset.row); });
+document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.dataset && e.target.dataset.row) tryOpen(e.target.dataset.row); });
+document.addEventListener('change', e => {
+  if (e.target.dataset && e.target.dataset.field) { audit(PEOPLE[roleNow()] + ' (' + roleNow() + ')', `Edited 1003 field: ${e.target.dataset.field}`, [e.target.defaultValue, e.target.value]); e.target.defaultValue = e.target.value; toast('Saved to the loan file and logged'); return; }
+  if (e.target.dataset && e.target.dataset.bp === 'fthb') {
+    const was = LOAN.fthb; LOAN.fthb = e.target.value; LOAN.fthbSource = `Entered by ${PEOPLE[roleNow()]} (LO) · ${now()}`;
+    audit(PEOPLE[roleNow()] + ' (' + roleNow() + ')', 'Changed first-time homebuyer', [was, LOAN.fthb]); render(); toast('Borrower profile updated'); return;
+  }
+  if (e.target.dataset && e.target.dataset.profile) {
+    const k = e.target.dataset.profile, was = LOAN[k]; LOAN[k] = e.target.value;
+    if (k === 'purpose' && LOAN.purpose !== 'Refinance') LOAN.refiType = '';
+    if (k === 'docType' && LOAN.docType !== 'Alt doc') LOAN.altDoc = '';
+    audit(PEOPLE[roleNow()] + ' (' + roleNow() + ')', `Changed loan profile: ${k.replace(/([A-Z])/g, ' $1').toLowerCase()}`, [was || '—', LOAN[k]]);
+    render(); toast('Loan profile updated. Rules and checks follow the new profile.'); return;
+  }
+  if (e.target.id === 'role') { if (state.view === 'loan' && TAB_ROLE[state.tab]) state.tab = myTab(); render(); toast(state.view === 'pipeline' ? `Showing the ${e.target.value.toLowerCase()} pipeline` : state.view === 'reports' ? `Showing ${e.target.value.toLowerCase()} reporting` : `Viewing as ${e.target.value}`); return; }
+  if (e.target.id === 'closeDate' && e.target.value) {
+    audit(roleNow(), 'Changed closing date', [fmtDate(parseDate(state.closeDate)), fmtDate(parseDate(e.target.value))]);
+    state.closeDate = e.target.value; render(); toast('Closing date changed. Dates and per-diem recalculated.'); return;
+  }
+  if (e.target.dataset && e.target.dataset.act === 'signoff') {
+    const c = CONDS.find(x => x.id === e.target.dataset.id);
+    audit(roleNow() === 'Underwriter' ? 'G. Whitfield (Underwriter)' : roleNow(), `Changed sign-off authority: ${c.title}`, [c.signoff, e.target.value]);
+    c.signoff = e.target.value; render(); toast('Sign-off authority delegated');
+  }
+});
+render();
+</script>
+
+</body>
+</html>

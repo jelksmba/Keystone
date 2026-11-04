@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0}</style>
+</head>
+<body>
+<title>Keystone LOS Overview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@600;700&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column, same system as the All-in-One Stack page. A table of contents up top, the loan journey drawn as a track of stages. */
+:root {
+  --bg: #F3F5F2; --surface: #FFFFFF; --surface-2: #F8FAF7; --ink: #17201C; --muted: #5B6761; --line: #DCE2DD;
+  --accent: #1F5F4A; --accent-ink: #FFFFFF; --accent-weak: #E2EEE8;
+  --deep: #0F3A2C; --gold: #E2A52C;
+  --ok: #2E7A4D; --ok-bg: #E4F2E9; --warn: #9A6200; --warn-bg: #FBF0DC; --bad: #B0322A; --bad-bg: #FBE6E4; --info: #2C5B88; --info-bg: #E3ECF6; --neutral-bg: #ECEFEC;
+  --font-display: "Schibsted Grotesk", "Public Sans", system-ui, sans-serif;
+  --font-ui: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #101513; --surface: #171F1C; --surface-2: #1B2420; --ink: #E5ECE8; --muted: #9AA8A1; --line: #2A3631;
+  --accent: #6BC29F; --accent-ink: #0E1A15; --accent-weak: #1D3429; --deep: #A9DEC6; --gold: #F0C25E;
+  --ok: #6CC08A; --ok-bg: #19301F; --warn: #E2A94B; --warn-bg: #33270F; --bad: #EF7B70; --bad-bg: #3A1B18; --info: #81B2DF; --info-bg: #182A3B; --neutral-bg: #232D29;
+  color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #101513; --surface: #171F1C; --surface-2: #1B2420; --ink: #E5ECE8; --muted: #9AA8A1; --line: #2A3631;
+  --accent: #6BC29F; --accent-ink: #0E1A15; --accent-weak: #1D3429; --deep: #A9DEC6; --gold: #F0C25E;
+  --ok: #6CC08A; --ok-bg: #19301F; --warn: #E2A94B; --warn-bg: #33270F; --bad: #EF7B70; --bad-bg: #3A1B18; --info: #81B2DF; --info-bg: #182A3B; --neutral-bg: #232D29;
+  color-scheme: dark; }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-ui); font-size: 15px; line-height: 1.55; }
+.wrap { max-width: 1080px; margin: 0 auto; padding-block: 40px 64px; padding-inline: 20px; display: flex; flex-direction: column; gap: 36px; }
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+h1, h2 { font-family: var(--font-display); letter-spacing: -0.005em; }
+h1 { font-size: clamp(26px, 4vw, 36px); line-height: 1.15; }
+h2 { font-size: 21px; }
+h3 { font-size: 16px; }
+p { margin: 0; max-width: 70ch; }
+a { color: var(--accent); }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.brandbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.mark { width: 26px; height: 26px; border-radius: 6px; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font: 700 13px var(--font-display); }
+.wordmark { font: 700 17px var(--font-display); }
+.eyebrow { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 600; }
+.lead { font-size: 17px; }
+.tagline { font: 700 18px/1.3 var(--font-display); color: var(--deep); }
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+.num { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+section { display: flex; flex-direction: column; gap: 14px; scroll-margin-top: 16px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px 20px; min-width: 0; }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.list { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; }
+.card .list { margin-top: 8px; }
+.toc { display: flex; flex-wrap: wrap; gap: 6px; }
+.toc a { font-size: 13px; font-weight: 600; text-decoration: none; border: 1px solid var(--line); background: var(--surface); color: var(--muted); border-radius: 999px; padding: 5px 12px; }
+.toc a:hover { color: var(--accent); border-color: var(--accent); }
+.pillars { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+.pillars .card p { font-size: 13.5px; margin-top: 6px; }
+.note { font-size: 13px; color: var(--muted); }
+.tag { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+.tag.ok { background: var(--ok-bg); color: var(--ok); }
+.tag.warn { background: var(--warn-bg); color: var(--warn); }
+.tag.bad { background: var(--bad-bg); color: var(--bad); }
+.tag.info { background: var(--info-bg); color: var(--info); }
+.tag.n { background: var(--neutral-bg); color: var(--muted); }
+.tag.b { background: var(--accent-weak); color: var(--accent); }
+.tbl { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+table { width: 100%; border-collapse: collapse; }
+.tbl.wide table { min-width: 680px; }
+th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); padding: 10px 14px; border-bottom: 1px solid var(--line); }
+td { padding: 11px 14px; border-bottom: 1px solid var(--line); vertical-align: top; font-size: 14px; }
+tr:last-child td { border-bottom: 0; }
+td.k { font-weight: 600; white-space: nowrap; }
+td.ex { color: var(--muted); font-size: 13px; }
+/* Loan journey track */
+.track { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px 20px; }
+.stages { display: grid; grid-template-columns: repeat(8, minmax(104px, 1fr)); gap: 0; min-width: 860px; list-style: none; margin: 0; padding: 0; }
+.stage { position: relative; padding: 0 8px 0 0; display: flex; flex-direction: column; gap: 6px; }
+.stage .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--accent); background: var(--surface); position: relative; z-index: 1; }
+.stage::before { content: ""; position: absolute; top: 6px; left: 0; right: 0; height: 2px; background: var(--line); }
+.stage:last-child::before { right: 50%; }
+.stage .n { font: 500 11px var(--font-data); color: var(--muted); }
+.stage .t { font-weight: 700; font-size: 14px; line-height: 1.25; }
+.stage .o { font-size: 12.5px; color: var(--muted); line-height: 1.35; }
+.stage.gate .dot { background: var(--gold); border-color: var(--gold); border-radius: 3px; transform: rotate(45deg); }
+.stage.decide .dot { background: var(--accent); }
+.legend { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 14px; font-size: 12.5px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 10px; height: 10px; display: inline-block; border: 2px solid var(--accent); border-radius: 50%; }
+.legend i.d { background: var(--accent); }
+.legend i.g { background: var(--gold); border-color: var(--gold); border-radius: 2px; transform: rotate(45deg); }
+.loop { margin-top: 12px; font-size: 13px; padding: 10px 12px; background: var(--surface-2); border-radius: 6px; }
+.steps { counter-reset: s; list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.steps li { counter-increment: s; }
+.steps li::before { content: counter(s); font: 500 12px var(--font-data); color: var(--accent); display: block; margin-bottom: 4px; }
+.steps p { font-size: 13.5px; margin-top: 4px; }
+.ai { border-left: 0; display: flex; gap: 14px; align-items: flex-start; }
+.ai .gem { flex: none; width: 12px; height: 12px; margin-top: 6px; background: var(--gold); transform: rotate(45deg); border-radius: 2px; }
+.check { columns: 2; column-gap: 28px; margin: 8px 0 0; padding-left: 18px; }
+.check li { break-inside: avoid; margin-bottom: 6px; }
+.promise { font-size: 13px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+.news td.d { font-family: var(--font-data); font-size: 13px; white-space: nowrap; color: var(--muted); }
+@media (max-width: 900px) { .pillars { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 760px) { .grid2, .grid3, .steps, .pillars { grid-template-columns: minmax(0, 1fr); } .check { columns: 1; } }
+</style>
+
+<div class="wrap">
+  <header style="display:flex;flex-direction:column;gap:14px">
+    <div class="brandbar"><span class="mark">K</span><span class="wordmark">Keystone</span><span class="eyebrow" style="margin-left:6px">Product overview</span></div>
+    <h1>One AI-powered loan origination system, from application to investor</h1>
+    <p class="lead">Keystone replaces the LOS and the stack of tools bolted around it. It gathers verified data first, then guides every person on the file to clear to close.</p>
+    <p class="tagline">Verified data. Clear next steps. Clear to close, sooner.</p>
+    <nav class="toc" aria-label="Sections">
+      <a href="#what">What it is</a><a href="#who">Who it's for</a><a href="#journey">How a loan moves</a><a href="#data">Verification</a><a href="#cs">Four C's</a><a href="#alerts">Alerts and conditions</a><a href="#roles">Every role</a><a href="#compliance">Compliance and QC</a><a href="#audit">Audits and delivery</a><a href="#reporting">Reporting</a><a href="#stack">Tech stack</a><a href="#switch">Switching</a><a href="#plans">Plans</a><a href="#new">What's new</a>
+    </nav>
+  </header>
+
+  <section id="what">
+    <h2>What Keystone is</h2>
+    <p>Most lenders run an LOS plus a dozen outside tools for verifications, income calculation, ordering, compliance and QC. Staff move data between them by hand. Keystone puts that work in one place.</p>
+    <div class="pillars">
+      <div class="card"><h3>Digital first</h3><p>Borrowers connect payroll, bank and tax accounts instead of hunting for paperwork. Verified data flows straight into the loan.</p></div>
+      <div class="card"><h3>Verified, not stated</h3><p>Every data point shows whether it came from the borrower or a verified source. Gaps are flagged and fixed in one click.</p></div>
+      <div class="card"><h3>Automated end to end</h3><p>Milestones trigger orders, conditions, disclosures and compliance checks. Nobody has to remember to click a button.</p></div>
+      <div class="card"><h3>Guided for every role</h3><p>Each person sees their own checklist and their next best action.</p></div>
+      <div class="card"><h3>QC on every loan</h3><p>Checks run at every milestone, not on a sample after closing.</p></div>
+    </div>
+    <p class="note">Keystone is in development. This overview describes the product as designed and is updated as the product changes.</p>
+  </section>
+
+  <section id="who">
+    <h2>Who it's for</h2>
+    <p>Keystone is built for retail lending, where the lender takes, processes, underwrites, closes and funds its own loans.</p>
+    <div class="grid3">
+      <div class="card"><h3>Community banks and credit unions</h3><p class="small" style="margin-top:6px">Exam-ready audit trail and compliance reports. Portfolio and sold loans in one system. Core banking connection. CRA and HMDA reporting.</p></div>
+      <div class="card"><h3>Retail mortgage lenders</h3><p class="small" style="margin-top:6px">One platform in place of the LOS plus outside tools. Less re-keying. Faster time to clear to close.</p></div>
+      <div class="card"><h3>New and growing lenders</h3><p class="small" style="margin-top:6px">Start on a complete system without stitching vendors together.</p></div>
+    </div>
+    <p>All major loan types are supported from day one: Conventional (Fannie Mae and Freddie Mac), FHA, VA, USDA, Jumbo and Non-QM, for purchase, refinance and HELOC.</p>
+  </section>
+
+  <section id="journey">
+    <h2>How a loan moves through Keystone</h2>
+    <p>Every loan follows the same path, and each stage has an owner. Entering a stage triggers its orders, conditions and checks automatically.</p>
+    <div class="track">
+      <ol class="stages">
+        <li class="stage"><span class="dot"></span><span class="n">01</span><span class="t">Origination</span><span class="o">Loan officer</span></li>
+        <li class="stage"><span class="dot"></span><span class="n">02</span><span class="t">Disclosures</span><span class="o">Disclosure desk</span></li>
+        <li class="stage"><span class="dot"></span><span class="n">03</span><span class="t">Processing</span><span class="o">Processor</span></li>
+        <li class="stage decide"><span class="dot"></span><span class="n">04</span><span class="t">Underwriting</span><span class="o">Underwriter · decision</span></li>
+        <li class="stage"><span class="dot"></span><span class="n">05</span><span class="t">Closing</span><span class="o">Closer · docs out to signed</span></li>
+        <li class="stage gate"><span class="dot"></span><span class="n">06</span><span class="t">Closing audit</span><span class="o">Closer · must pass before funding</span></li>
+        <li class="stage"><span class="dot"></span><span class="n">07</span><span class="t">Funding</span><span class="o">Funder · wire to funded</span></li>
+        <li class="stage gate"><span class="dot"></span><span class="n">08</span><span class="t">Post-close</span><span class="o">Post-closer and lock desk · audit, delivery, purchase</span></li>
+      </ol>
+      <div class="legend"><span><i></i>Stage</span><span><i class="d"></i>Decision</span><span><i class="g"></i>Audit gate</span></div>
+      <div class="loop"><b>Conditional approval or suspended?</b> The loan loops back through the processor to underwriting. Only a final approval moves it to closing.</div>
+    </div>
+    <p>In the loan file, a roadmap shows each completed stage with its date, what the current stage still needs, and target dates for what comes next.</p>
+  </section>
+
+  <section id="data">
+    <h2>Digital-first data and verification</h2>
+    <p>Keystone verifies first and asks for paperwork last. Clean data at the start means fewer conditions, fewer surprises and fewer re-disclosures later.</p>
+    <div class="grid2">
+      <div class="card"><h3>Borrower-permissioned data</h3><p class="small" style="margin-top:6px">With the borrower's consent, payroll, bank and IRS transcript data is pulled directly. Every consent is recorded.</p></div>
+      <div class="card"><h3>Property facts before pricing</h3><p class="small" style="margin-top:6px">Property type, HOA and taxes come from public records when the address is entered, so the loan is priced on facts, not guesses.</p></div>
+      <div class="card"><h3>Stated vs. verified, everywhere</h3><p class="small" style="margin-top:6px">Each field carries a badge, with its source one click away:</p><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"><span class="tag ok">Verified</span><span class="tag n">Stated</span><span class="tag warn">Doesn't match</span><span class="tag bad">Missing</span></div></div>
+      <div class="card"><h3>Ordering hub</h3><p class="small" style="margin-top:6px">Credit, appraisal, AVM, flood, title, HOA documents, tax transcripts and fraud checks are ordered automatically when a milestone is reached, then tracked to receipt.</p></div>
+      <div class="card"><h3>Document recognition</h3><p class="small" style="margin-top:6px">Uploaded documents are classified, read and checked against the loan. Data from connected sources is used directly, without reading a PDF.</p></div>
+      <div class="card"><h3>eFolder side by side</h3><p class="small" style="margin-top:6px">Documents open next to the loan data, with the extracted values and the condition each one satisfies.</p></div>
+    </div>
+  </section>
+
+  <section id="cs">
+    <h2>The four C's of underwriting</h2>
+    <p>Underwriting is organized around the four C's, with an analysis screen for each. Rules adjust to the loan program: Fannie Mae, Freddie Mac, FHA, VA, USDA or Non-QM.</p>
+    <div class="tbl wide"><table>
+      <thead><tr><th>C</th><th>Screen</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td class="k">Character</td><td>Credit analysis</td><td>Reconciles the credit report with the application; flags missing or mismatched debts; applies program rules for payments not reported (for example, revolving and student loans)</td></tr>
+        <tr><td class="k">Capacity</td><td>Income and employment analysis</td><td>Calculates qualifying income from verified payroll and tax data; shows the calculation step by step; tracks verbal verification timing</td></tr>
+        <tr><td class="k">Capital</td><td>Asset analysis</td><td>Funds to close, reserves, gifts, seller credits, large deposits; spots recurring payments on bank statements that may be undisclosed debts</td></tr>
+        <tr><td class="k">Collateral</td><td>Property analysis</td><td>Value from the AVM and the appraisal with confidence; property type, taxes, insurance and HOA checked against records; appraisal review checklist</td></tr>
+      </tbody>
+    </table></div>
+    <p>A 1008-style summary pulls the four together with a recommendation and compensating factors. Automated underwriting results from DU, LPA and GUS are shown in the file.</p>
+  </section>
+
+  <section id="alerts">
+    <h2>Alerts and conditions</h2>
+    <p>Alerts close the gaps between what the application says and what was verified. Each alert shows the application value, the verified value and its source, with one click to update the application. Every update is logged.</p>
+    <div class="grid2">
+      <div class="card"><h3>Alerts cover</h3><ul class="list small">
+        <li>Missing information on the application, such as a former address found on credit</li>
+        <li>Payment amounts corrected from the credit report or program rules</li>
+        <li>Liabilities found on credit or bank statements but missing from the application</li>
+        <li>Income updated to the verified income calculation</li>
+        <li>Asset balances updated from statements</li>
+        <li>Housing costs updated from tax records and insurance quotes</li>
+      </ul><p class="small muted" style="margin-top:10px">The pipeline shows an alert count for each loan, and the loan file shows it at the top.</p></div>
+      <div class="card"><h3>Conditions across the whole loan</h3><p class="small" style="margin-top:6px">Conditions are generated by rules as the loan moves. The underwriter validates them before they reach the borrower. Each has a person assigned to do the work and a role that signs it off.</p>
+        <table style="margin-top:10px"><tbody>
+          <tr><td style="padding-left:0"><span class="tag n">Added</span></td><td class="ex">New on the file; not yet released</td></tr>
+          <tr><td style="padding-left:0"><span class="tag warn">Open</span></td><td class="ex">Waiting on the assigned person or document</td></tr>
+          <tr><td style="padding-left:0"><span class="tag info">Satisfied</span></td><td class="ex">Received; waiting for sign-off</td></tr>
+          <tr><td style="padding-left:0"><span class="tag ok">Cleared</span></td><td class="ex">Signed off by the authorized role</td></tr>
+          <tr><td style="padding-left:0"><span class="tag n">Waived</span></td><td class="ex">Not required; waived by the underwriter with a reason</td></tr>
+        </tbody></table></div>
+    </div>
+  </section>
+
+  <section id="roles">
+    <h2>Built for every role</h2>
+    <p>Everyone signs in to their own pipeline and always knows the next thing to do.</p>
+    <div class="card"><ul class="list">
+      <li><b>Pipeline.</b> Your loans, with alert counts, your next step on each, readiness for clear to close and days in stage. Double-click a loan to open it.</li>
+      <li><b>Loan header.</b> Borrower, property, estimated value, loan amount, LTV, DTI, credit score, rate and lock, plus the loan profile: purpose and refinance type, loan type, category, investor, documentation and alt-doc type, income type, property type and occupancy. Inconsistent combinations are flagged.</li>
+      <li><b>Borrower profile.</b> First-time homebuyer, captured in the application or set by the loan officer, and investor experience (first-time, novice or experienced), calculated from real estate owned.</li>
+      <li><b>Loan file screens.</b> Summary, the application page by page, the four C's, conditions, documents, orders, fees and closing, compliance, file contacts and audit trail. Search inside the loan jumps to any field, document or condition.</li>
+      <li><b>Role workflows.</b> Each role has a checklist. Steps are done by the system, checked by the system, or confirmed by you.</li>
+      <li><b>Ready for clear to close.</b> A progress ring shows how close the loan is, the next best actions and how much each one moves it, and file milestones earned along the way.</li>
+      <li><b>Team awareness.</b> See who else is working in the file. File contacts list every person and vendor on the loan and control access.</li>
+    </ul></div>
+    <p class="small muted">Roles with their own workflow, pipeline and reporting: loan officer, disclosure desk, processor, underwriter, closer, funder, post-closer and lock desk, plus branch, processing, underwriting, closing and capital markets managers.</p>
+  </section>
+
+  <section id="compliance">
+    <h2>Compliance and quality control</h2>
+    <p>Compliance and QC checks run automatically at every milestone change, on every loan, and users see each result.</p>
+    <div class="card"><ul class="list">
+      <li><b>Disclosure timing.</b> The TRID clock starts when the sixth application item arrives. Keystone tracks Loan Estimate and Closing Disclosure deadlines using the correct business-day rules, including federal holidays, and flags changes that restart the waiting period.</li>
+      <li><b>Fee tolerances.</b> Zero and 10% tolerance buckets are checked against the closing agent's figures before closing.</li>
+      <li><b>Rules covered.</b> TRID, RESPA, ability-to-repay and QM, HOEPA and higher-priced loan tests, ECOA appraisal delivery, loan officer compensation, HMDA data, identity and OFAC screening, and rate lock coverage.</li>
+      <li><b>100% QC.</b> Every loan is checked for data mismatches, undisclosed debts, DTI drift and fraud alerts, instead of a sample after closing. Formal post-closing QC programs still apply; Keystone makes them easier.</li>
+      <li><b>Audit trail.</b> Every change records who made it, when, and the value before and after: application edits, documents, conditions, pricing, fees and milestone moves.</li>
+    </ul></div>
+  </section>
+
+  <section id="audit">
+    <h2>Closing audit, post-close and investor delivery</h2>
+    <p>No wire is requested until the signed closing package has been audited against the loan file.</p>
+    <div class="grid3">
+      <div class="card"><span class="eyebrow">Before funding</span><h3 style="margin-top:4px">Closing audit</h3><p class="small" style="margin-top:6px">When the signed package comes back, Keystone reads each document and compares it with the loan:</p><ul class="list small">
+        <li>Borrower name, property address, loan amount, rate, payment, first payment date and closing date</li>
+        <li>Cash to close against the final settlement statement, and APR on the final Closing Disclosure</li>
+        <li>Every required document present, signed and dated</li></ul>
+        <p class="small muted" style="margin-top:8px">Each finding is marked corrected, requested from the closing agent (adds a prior-to-funding condition), or accepted with a note. Funding unlocks when no blocking issue remains.</p></div>
+      <div class="card"><span class="eyebrow">After funding</span><h3 style="margin-top:4px">Post-close audit</h3><p class="small" style="margin-top:6px">A second audit confirms the funded loan matches the package and tracks trailing documents such as the recorded deed of trust and final title policy, MERS registration and HMDA data.</p></div>
+      <div class="card"><span class="eyebrow">To the investor</span><h3 style="margin-top:4px">Investor delivery</h3><p class="small" style="margin-top:6px">Keystone builds the package from the eFolder in the investor's stacking order, with the loan data file (MISMO 3.4). Agency loans go through Fannie Mae or Freddie Mac delivery systems, with the original note to the document custodian. Other investors receive files through their portal or secure transfer, never plain email. The lock desk then reconciles the purchase advice and pays off the warehouse line.</p></div>
+    </div>
+  </section>
+
+  <section id="reporting">
+    <h2>Reporting and team leaderboards</h2>
+    <p>Reporting changes with your role, and managers see their whole team. Filter by last week, month, three months or year.</p>
+    <div class="tbl wide"><table>
+      <thead><tr><th>Role</th><th>Highlights</th></tr></thead>
+      <tbody>
+        <tr><td class="k">Loan officer</td><td>Funnel from application link to funded, time in each stage, potential compensation by stage</td></tr>
+        <tr><td class="k">Disclosure desk</td><td>Loan Estimates sent, on-time rate, time to send, re-disclosure reasons</td></tr>
+        <tr><td class="k">Processor</td><td>Files submitted, complete on first submission, days in processing, order turn times</td></tr>
+        <tr><td class="k">Underwriter</td><td>Files decided, turn time, same-day decisions, most common conditions</td></tr>
+        <tr><td class="k">Closer and funder</td><td>Docs drawn, on-time Closing Disclosures, zero-cure closings, time to fund, fee mismatches by closing agent</td></tr>
+        <tr><td class="k">Post-closer</td><td>Loans delivered, days from funding to delivery, post-close audit pass rate, trailing documents outstanding</td></tr>
+        <tr><td class="k">Lock desk and capital markets</td><td>Locked pipeline, pull-through, hedge coverage, gain on sale, lock activity and expirations, sales by investor</td></tr>
+        <tr><td class="k">Managers</td><td>Every metric for each person on their team</td></tr>
+      </tbody>
+    </table></div>
+    <p><b>Leaderboards</b> rank each person against others with the same manager, on the same KPIs, with "your standing" on each. Quality metrics sit beside speed metrics, so nobody wins by rushing. <b>Your pace</b> shows personal streaks and bests.</p>
+  </section>
+
+  <section id="stack">
+    <h2>One platform in place of your tech stack</h2>
+    <p>Keystone brings the tools lenders buy around their LOS inside, in one of three ways. Your team never leaves Keystone.</p>
+    <div class="tbl wide"><table>
+      <thead><tr><th>How</th><th>What it means</th><th>Examples</th></tr></thead>
+      <tbody>
+        <tr><td><span class="tag b">Built in</span></td><td>Keystone's own capability</td><td class="ex">Credit, income, asset and property analysis; document recognition; ordering hub; 100% QC; workflow and alerts; reporting; borrower application and portal</td></tr>
+        <tr><td><span class="tag info">Embedded</span></td><td>Specialist data delivered inside Keystone, on one contract and one invoice</td><td class="ex">Credit reports; employment, income and asset verification; tax transcripts; AVMs; appraisal, HOA and flood orders; fraud and OFAC checks; insurance and mortgage insurance quotes</td></tr>
+        <tr><td><span class="tag n">Connected</span></td><td>Systems you are required to use or already own</td><td class="ex">DU, LPA and GUS; your pricing engine; compliance engine; title; closing documents; eSign and eClose</td></tr>
+      </tbody>
+    </table></div>
+    <p>Verification uses a cost-saving order: borrower-permissioned payroll and bank data first, paid databases only when needed. <a href="tech-stack.html">See the full stack map</a>.</p>
+  </section>
+
+  <section id="switch">
+    <h2>Switching without disruption</h2>
+    <p>Changing an LOS is a big decision, so Keystone makes the move gradual and supported.</p>
+    <ol class="steps">
+      <li class="card"><h3>Bring your loans over</h3><p>In-progress and past loans are imported from your current LOS, documents included, using the industry-standard MISMO format.</p></li>
+      <li class="card"><h3>Run both side by side</h3><p>New applications start in Keystone while loans already in process finish where they started. Reporting covers both.</p></li>
+      <li class="card"><h3>Set up for you</h3><p>Fee tables, conditions, workflows, users and file contacts are configured from how your team works today.</p></li>
+      <li class="card"><h3>Role-based training</h3><p>Short onboarding for each role, reinforced by the built-in workflow checklists.</p></li>
+      <li class="card"><h3>Agreed success targets</h3><p>A go-live checklist and 90-day measures such as time to clear to close and data gaps per file.</p></li>
+      <li class="card"><h3>Contract transition help</h3><p>Credits toward the remaining term of the system you are leaving.</p></li>
+    </ol>
+  </section>
+
+  <section id="plans">
+    <h2>Plans</h2>
+    <div class="card ai"><span class="gem" aria-hidden="true"></span><div>
+      <p><b>AI is part of every plan, not an add-on.</b> Pricing details are available on request. Every plan includes:</p>
+      <ul class="check small">
+        <li>Workflows, milestones, role checklists and the ordering hub</li>
+        <li>Rule-based conditions, alerts, compliance checks and audits</li>
+        <li>Document recognition and data extraction from uploads</li>
+        <li>Income calculation, including self-employed income from tax returns</li>
+        <li>Insights and restructuring suggestions for loan officers and underwriters</li>
+        <li>Written underwriting summary and recommendation</li>
+        <li>AI-assisted QC, closing audit and appraisal review</li>
+        <li>In-loan assistant, borrower application and portal, reporting and leaderboards</li>
+      </ul></div></div>
+  </section>
+
+  <section id="new">
+    <h2>What's new</h2>
+    <div class="tbl news"><table>
+      <thead><tr><th>Date</th><th>Update</th></tr></thead>
+      <tbody>
+        <tr><td class="d">Oct 12, 2026</td><td>Overview rebuilt as a branded web page, matching the Keystone brand guide</td></tr>
+        <tr><td class="d">Oct 12, 2026</td><td>Keystone brand guide: voice, color, type and the keystone arch, applied across the product</td></tr>
+        <tr><td class="d">Oct 12, 2026</td><td>AI features included in every plan</td></tr>
+        <tr><td class="d">Oct 12, 2026</td><td>Disclosure desk, lock desk, post-closer and capital markets roles with workflows, reporting and leaderboards</td></tr>
+        <tr><td class="d">Oct 12, 2026</td><td>Post-close audit, investor package and delivery, purchase reconciliation</td></tr>
+        <tr><td class="d">Oct 12, 2026</td><td>Closing audit milestone: signed package checked against the loan file before funding</td></tr>
+        <tr><td class="d">Oct 12, 2026</td><td>Team leaderboards in reporting, ranked within each manager's team</td></tr>
+        <tr><td class="d">Oct 12, 2026</td><td>Loan journey roadmap and clear-to-close readiness with next best actions</td></tr>
+        <tr><td class="d">Oct 12, 2026</td><td>Borrower profile: first-time homebuyer and investor experience</td></tr>
+        <tr><td class="d">Oct 12, 2026</td><td>Loan header with full loan profile and consistency checks</td></tr>
+        <tr><td class="d">Oct 12, 2026</td><td>Alerts that close gaps between the application and verified data</td></tr>
+        <tr><td class="d">Oct 12, 2026</td><td>Loan file screens: loan application, four C's analysis, role workflows, in-loan search</td></tr>
+        <tr><td class="d">Oct 12, 2026</td><td>Condition statuses: Added, Open, Satisfied, Cleared, Waived</td></tr>
+        <tr><td class="d">Oct 12, 2026</td><td>Role-based pipeline, reporting and eFolder</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <div class="promise">Keystone · Verified data. Clear next steps. Clear to close, sooner.</div>
+</div>
+
+</body>
+</html>
