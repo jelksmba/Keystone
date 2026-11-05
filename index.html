@@ -372,9 +372,114 @@ tr.me-row td { background: var(--accent-weak); }
   .findings li { grid-template-columns: minmax(0, 1fr); gap: 4px; }
   .tracker .pname { display: none; }
 }
+
+/* Sign-in screen: form on the left, "Today in mortgage" widgets on the right. Covers the app until a role signs in. */
+.login { position: fixed; inset: 0; z-index: 60; background: var(--bg); overflow-y: auto; padding-block: max(24px, env(safe-area-inset-top, 0px)) 32px; padding-inline: 20px; }
+.login-in { max-width: 1240px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 400px) minmax(0, 1fr); gap: 20px; align-items: start; }
+.login .signin { padding: 24px; display: flex; flex-direction: column; gap: 16px; position: sticky; top: 0; }
+.login .brandline { display: flex; align-items: center; gap: 10px; }
+.login .brandline .brand-mark { width: 30px; height: 30px; font-size: 15px; }
+.login h1 { font-size: 26px; line-height: 1.15; }
+.login .promise { font-family: var(--font-display); font-weight: 700; color: var(--accent); font-size: 15px; }
+.login .fld { display: flex; flex-direction: column; gap: 5px; }
+.login .fld input { border: 1px solid var(--line); background: var(--surface-2); border-radius: 6px; padding: 9px 10px; width: 100%; min-width: 0; }
+.login .fld input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.rolegrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.rolepick { text-align: left; border: 1px solid var(--line); background: var(--surface); border-radius: 6px; padding: 7px 9px; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.rolepick b { font-size: 13px; }
+.rolepick span { font-size: 11.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rolepick:hover { border-color: var(--muted); }
+.rolepick[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-weak); box-shadow: inset 0 0 0 1px var(--accent); }
+.login .go { padding: 10px 14px; font-size: 14px; }
+.login .fine { font-size: 12px; color: var(--muted); }
+.today { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.today-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.today-head h2 { font-size: 20px; }
+.ticker { overflow: hidden; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
+.ticker-track { display: flex; gap: 28px; width: max-content; padding: 10px 14px; animation: tick 48s linear infinite; }
+.ticker:hover .ticker-track { animation-play-state: paused; }
+@keyframes tick { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.tk { display: inline-flex; gap: 8px; align-items: baseline; white-space: nowrap; font-size: 13px; }
+.tk b { font-family: var(--font-data); font-weight: 500; }
+.tk .nm { color: var(--muted); font-size: 12px; }
+.up { color: var(--ok); } .down { color: var(--bad); }
+.wgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.widget { padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.widget h3 { font-size: 15px; }
+.wh { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.rates { width: 100%; border-collapse: collapse; }
+.rates td { padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 13.5px; }
+.rates tr:last-child td { border-bottom: 0; }
+.rates td.n { text-align: right; font-family: var(--font-data); font-variant-numeric: tabular-nums; white-space: nowrap; padding-left: 10px; }
+.spark { display: block; width: 100%; height: 44px; }
+.news { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.news li { padding: 9px 0; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 2px; }
+.news li:last-child { border-bottom: 0; }
+.news b { font-size: 13.5px; font-weight: 600; }
+.news span { font-size: 12px; color: var(--muted); }
+.cnote { border-left: 0; }
+.cnote .rule { font-size: 14.5px; line-height: 1.5; }
+.cnote .cite { font-family: var(--font-data); font-size: 12px; color: var(--muted); }
+.post { display: grid; grid-template-columns: 38px minmax(0, 1fr); gap: 10px; }
+.post .avatar { width: 38px; height: 38px; }
+.post p { margin: 4px 0 0; font-size: 14px; line-height: 1.5; }
+.post .meta { font-size: 12px; color: var(--muted); }
+.post .acts { display: flex; gap: 8px; margin-top: 10px; align-items: center; }
+.gem { display: inline-block; width: 9px; height: 9px; background: var(--gold); transform: rotate(45deg); border-radius: 2px; margin-right: 8px; }
+.signout { background: none; border: 0; padding: 0; color: var(--muted); font-size: 12px; text-decoration: underline; text-align: left; }
+@media (max-width: 980px) { .login-in { grid-template-columns: minmax(0, 1fr); } .login .signin { position: static; } }
+@media (max-width: 640px) { .wgrid { grid-template-columns: minmax(0, 1fr); } }
+@media (prefers-reduced-motion: reduce) { .ticker { overflow-x: auto; } }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 </style>
 
+<div id="login" class="login" role="dialog" aria-label="Sign in to Keystone">
+  <div class="login-in">
+    <form class="card signin" id="loginForm" autocomplete="off">
+      <div class="brandline"><div class="brand-mark">K</div><div><div class="brand-name">Keystone</div><div class="brand-sub">Loan origination</div></div></div>
+      <div><h1>Sign in</h1><p class="promise" style="margin:6px 0 0">Verified data. Clear next steps. Clear to close, sooner.</p></div>
+      <div class="fld"><label class="label" for="loginEmail">Work email</label><input id="loginEmail" type="email" value="grace.whitfield@summitridge.bank"></div>
+      <div class="fld"><label class="label" for="loginPw">Password</label><input id="loginPw" type="password" value="prototype"></div>
+      <div class="fld"><span class="label" id="roleLbl">Prototype: choose who you are</span><div class="rolegrid" id="rolegrid" role="group" aria-labelledby="roleLbl"></div></div>
+      <button class="btn primary go" type="submit" id="loginGo">Sign in as Grace Whitfield</button>
+      <p class="fine" style="margin:0">Prototype with sample data. In the real product your role and permissions come from your account, with single sign-on and multi-factor authentication.</p>
+    </form>
+    <div class="today">
+      <div class="today-head"><h2>Today in mortgage</h2><span class="small muted" id="todayDate"></span></div>
+      <div class="ticker" aria-label="Mortgage company stocks"><div class="ticker-track" id="ticker"></div></div>
+      <div class="wgrid">
+        <div class="card widget">
+          <div class="wh"><h3>Rates</h3><span class="small muted">Daily change</span></div>
+          <table class="rates"><tbody id="rateRows"></tbody></table>
+          <svg class="spark" id="spark" viewBox="0 0 300 44" preserveAspectRatio="none" aria-label="30-year fixed rate, last 30 days"></svg>
+          <span class="small muted">30-year fixed, last 30 days</span>
+        </div>
+        <div class="card widget cnote">
+          <div class="wh"><h3>Compliance note of the day</h3><span class="small muted" id="cnNum"></span></div>
+          <div class="label" id="cnTopic"></div>
+          <p class="rule" id="cnRule" style="margin:0"></p>
+          <p class="small" id="cnWhy" style="margin:0"></p>
+          <span class="cite" id="cnCite"></span>
+        </div>
+        <div class="card widget">
+          <div class="wh"><h3>Mortgage news</h3><span class="small muted">Sample feed</span></div>
+          <ul class="news" id="newsList"></ul>
+        </div>
+        <div class="card widget">
+          <div class="wh"><h3>From the team</h3><span class="small muted">Shared today</span></div>
+          <div class="post">
+            <div class="avatar">DR</div>
+            <div><div><b>Dana Ruiz</b> <span class="meta">Processing manager · 7:42 AM</span></div>
+              <p id="postText"></p>
+              <div class="acts"><button class="btn sm" type="button" id="cheerBtn" aria-pressed="false">Cheer · <span id="cheerN">14</span></button><span class="meta">Quote of the day: <span id="quote"></span></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="fine" style="margin:0">Rates, quotes and headlines on this screen are sample data for the prototype. At launch they come from licensed market and news feeds.</p>
+    </div>
+  </div>
+</div>
 <div class="app">
   <aside class="rail">
     <div class="brand">
@@ -413,7 +518,7 @@ tr.me-row td { background: var(--accent-weak); }
         </optgroup>
       </select>
     </div>
-    <div class="rail-foot">Prototype with sample data. In the real product, your role comes from your login.</div>
+    <div class="rail-foot">Prototype with sample data. In the real product, your role comes from your login.<br><button class="signout" type="button" id="signOut">Sign out</button></div>
   </aside>
   <main id="main"></main>
 </div>
@@ -2007,6 +2112,64 @@ document.addEventListener('change', e => {
   }
 });
 render();
+
+// ---- Sign-in screen ----
+const LOGIN_ROLES = ['Loan officer', 'Disclosure desk', 'Processor', 'Underwriter', 'Closer', 'Funder', 'Post-closer', 'Lock desk', 'Branch manager', 'Processing manager', 'Underwriting manager', 'Closing manager', 'Capital markets manager'];
+const STOCKS = [['ICE', 'Intercontinental Exchange', 168.42, 0.84], ['RKT', 'Rocket Companies', 17.86, -1.21], ['UWMC', 'UWM Holdings', 5.94, 0.68], ['LDI', 'loanDepot', 2.71, 2.26], ['PFSI', 'PennyMac Financial', 118.35, 0.41], ['GHLD', 'Guild Holdings', 19.62, -0.35], ['FNMA', 'Fannie Mae (OTC)', 10.48, 3.15], ['FMCC', 'Freddie Mac (OTC)', 9.87, 2.81], ['RDN', 'Radian Group', 34.10, -0.22], ['ESNT', 'Essent Group', 58.77, 0.37]];
+const RATES = [['30-yr fixed', 6.21, -0.04], ['15-yr fixed', 5.48, -0.03], ['30-yr FHA', 5.92, -0.05], ['30-yr VA', 5.79, -0.04], ['30-yr jumbo', 6.44, -0.02], ['10-yr Treasury', 4.12, -0.03]];
+const RATE_30D = [6.42, 6.40, 6.43, 6.39, 6.36, 6.38, 6.35, 6.33, 6.34, 6.30, 6.31, 6.28, 6.29, 6.32, 6.30, 6.27, 6.26, 6.28, 6.25, 6.24, 6.27, 6.25, 6.23, 6.26, 6.24, 6.22, 6.25, 6.23, 6.25, 6.21];
+const NEWS = [['Mortgage applications rise for a second straight week as rates ease', 'Purchase and refinance demand both up', '2h ago'], ['Agencies publish updated selling guide changes for first quarter', 'Income and asset documentation updates', '4h ago'], ['Home price growth slows in most large metros', 'Inventory continues to rebuild', '6h ago'], ['Lenders expand digital closing options for rural borrowers', 'Remote notarization and eClosings', '9h ago']];
+const COMPLIANCE = [
+  ['TRID · Loan Estimate', 'Deliver or mail the Loan Estimate within 3 business days of receiving an application, and at least 7 business days before consummation.', 'An application exists once you have the six items: name, income, SSN, property address, estimated value and loan amount.', 'Reg Z 12 CFR 1026.19(e)(1)'],
+  ['TRID · Closing Disclosure', 'The borrower must receive the Closing Disclosure at least 3 business days before consummation.', 'A higher APR beyond tolerance, a new loan product or an added prepayment penalty starts a new 3-day wait.', 'Reg Z 12 CFR 1026.19(f)'],
+  ['TRID · Tolerances', 'Lender fees, transfer taxes and services the borrower cannot shop for have zero tolerance. Recording fees and services from your provider list share a 10% bucket.', 'Cure any overage by refunding the borrower within 60 days of consummation.', 'Reg Z 12 CFR 1026.19(e)(3)'],
+  ['TRID · Changed circumstances', 'Send a revised Loan Estimate within 3 business days of learning about a valid changed circumstance.', 'Document the reason and the date you learned of it. The audit trail is your evidence.', 'Reg Z 12 CFR 1026.19(e)(4)'],
+  ['ECOA · Appraisals', 'Give the borrower a copy of every appraisal and valuation promptly when complete, or 3 business days before consummation, whichever is earlier.', 'Applies to first liens on a dwelling, even if the loan is denied or withdrawn.', 'Reg B 12 CFR 1002.14'],
+  ['ECOA · Adverse action', 'Notify the applicant of action taken within 30 days of receiving a completed application.', 'A counteroffer the applicant does not accept within 90 days also needs an adverse action notice.', 'Reg B 12 CFR 1002.9'],
+  ['RESPA · Counseling list', 'Provide a list of homeownership counseling organizations within 3 business days of application.', 'Use the CFPB tool to build the list from the applicant’s location.', 'Reg X 12 CFR 1024.20'],
+  ['Reg Z · LO compensation', 'Loan officer pay cannot vary based on a loan’s terms, such as its rate or fees.', 'Volume-based pay is allowed. Pay tied to which product a borrower picks is not.', 'Reg Z 12 CFR 1026.36(d)'],
+  ['HMDA · Recording data', 'Record HMDA data within 30 calendar days after the end of the quarter in which final action was taken.', 'Keystone fills most HMDA fields from the loan file. Review demographic fields for completeness.', 'Reg C 12 CFR 1003.4(f)'],
+  ['Reg Z · Right to cancel', 'On most refinances of a primary residence, the borrower has until midnight of the third business day after closing to cancel.', 'Do not fund until the rescission period ends. Purchases have no right to cancel.', 'Reg Z 12 CFR 1026.23']
+];
+const QUOTES = ['“Quality is never an accident.” John Ruskin', '“Well done is better than well said.” Benjamin Franklin', '“The secret of getting ahead is getting started.” Mark Twain', '“Small things, done consistently, make the difference.”', '“Clarity is kindness.”'];
+const POSTS = ['Tam took a file from submitted to clear to close in 6 days with zero suspense conditions. That’s the bar. Thank you for making every borrower feel like the only one.', 'Five first-time homebuyers got their keys this week. Every condition we cleared got a family home sooner.', 'Zero tolerance cures last month. Clean disclosures are a team sport, and this team is winning it.'];
+const dayIndex = () => { const d = new Date(); return Math.floor((d - new Date(d.getFullYear(), 0, 0)) / 864e5); };
+const pctFmt = v => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(2);
+let loginRole = 'Underwriter';
+function emailFor(r) { const n = PEOPLE[r] || r; return n.toLowerCase().replace(/[^a-z ]/g, '').replace(' ', '.') + '@summitridge.bank'; }
+function renderLogin() {
+  $('#rolegrid').innerHTML = LOGIN_ROLES.map(r => `<button type="button" class="rolepick" data-pick="${r}" aria-pressed="${r === loginRole}"><b>${r}</b><span>${PEOPLE[r]}</span></button>`).join('');
+  $('#loginGo').textContent = `Sign in as ${PEOPLE[loginRole]}`;
+  $('#loginEmail').value = emailFor(loginRole);
+}
+function renderToday() {
+  $('#todayDate').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  const one = STOCKS.map(([t, nm, px, ch]) => `<span class="tk"><b>${t}</b><span class="nm">${nm}</span><span class="mono">${px.toFixed(2)}</span><span class="mono ${ch >= 0 ? 'up' : 'down'}">${ch >= 0 ? '▲' : '▼'} ${Math.abs(ch).toFixed(2)}%</span></span>`).join('');
+  $('#ticker').innerHTML = one + one.replace(/class="tk"/g, 'class="tk" aria-hidden="true"');
+  $('#rateRows').innerHTML = RATES.map(([k, v, ch]) => `<tr><td>${k}</td><td class="n">${v.toFixed(2)}%</td><td class="n ${ch <= 0 ? 'up' : 'down'}">${pctFmt(ch)}</td></tr>`).join('');
+  const lo = Math.min(...RATE_30D) - 0.03, hi = Math.max(...RATE_30D) + 0.03, X = i => i / (RATE_30D.length - 1) * 296 + 2, Y = v => 42 - (v - lo) / (hi - lo) * 40;
+  const pts = RATE_30D.map((v, i) => `${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
+  $('#spark').innerHTML = `<polygon points="2,44 ${pts} 298,44" fill="var(--accent-weak)"/><polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="2" vector-effect="non-scaling-stroke"/><circle cx="${X(RATE_30D.length - 1)}" cy="${Y(RATE_30D[RATE_30D.length - 1])}" r="3" fill="var(--accent)"/>`;
+  $('#newsList').innerHTML = NEWS.map(([h, sub, t]) => `<li><b>${h}</b><span>${sub} · ${t}</span></li>`).join('');
+  const d = dayIndex(), c = COMPLIANCE[d % COMPLIANCE.length];
+  $('#cnTopic').textContent = c[0]; $('#cnRule').textContent = c[1]; $('#cnWhy').textContent = c[2]; $('#cnCite').textContent = c[3];
+  $('#cnNum').textContent = `${(d % COMPLIANCE.length) + 1} of ${COMPLIANCE.length}`;
+  $('#postText').textContent = POSTS[d % POSTS.length];
+  $('#quote').textContent = QUOTES[d % QUOTES.length];
+}
+function signIn() {
+  $('#role').value = loginRole; $('#login').hidden = true; state.view = 'pipeline';
+  render(); window.scrollTo({ top: 0 }); toast(`Signed in as ${PEOPLE[loginRole]} · ${loginRole}`);
+}
+document.addEventListener('click', e => {
+  const pick = e.target.closest('[data-pick]');
+  if (pick) { loginRole = pick.dataset.pick; renderLogin(); return; }
+  if (e.target.id === 'signOut') { loginRole = roleNow(); renderLogin(); $('#login').hidden = false; $('#login').scrollTop = 0; return; }
+  const cheer = e.target.closest('#cheerBtn');
+  if (cheer) { const on = cheer.getAttribute('aria-pressed') !== 'true'; cheer.setAttribute('aria-pressed', on); $('#cheerN').textContent = 14 + (on ? 1 : 0); cheer.classList.toggle('primary', on); }
+});
+$('#loginForm').addEventListener('submit', e => { e.preventDefault(); signIn(); });
+renderLogin(); renderToday();
 </script>
 
 </body>
